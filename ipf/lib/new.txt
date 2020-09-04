@@ -1,0 +1,4937 @@
+import 'dart:core';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mstroy/mainclasses/constants/OftenAppBar.dart';
+import 'package:mstroy/mainclasses/WorkWithCamera.dart';
+import 'package:mstroy/mainclasses/constants/GraphQLQueries.dart';
+import 'package:mstroy/mainclasses/constants/MSColors.dart';
+import 'package:mstroy/mainclasses/constants/NormalDate.dart';
+import 'package:mstroy/mainclasses/constants/urls.dart';
+
+class CreateIncident extends StatefulWidget {
+  final String projectName;
+  final String buttonName;
+  final String graphQLtoken;
+
+  CreateIncident({this.projectName, this.buttonName, this.graphQLtoken});
+
+  @override
+  State<StatefulWidget> createState() => _CreateIncidentState(
+      projectName: projectName,
+      buttonName: buttonName,
+      graphQLtoken: graphQLtoken);
+}
+
+final HttpLink httpLink = HttpLink(
+  uri: graphQLUrl,
+);
+var graphQLtoken;
+var userName = "";
+var userEmail = "";
+final AuthLink authLink = AuthLink(
+  getToken: () async => graphQLtoken.toString(),
+);
+
+ValueNotifier<GraphQLClient> client = ValueNotifier(
+  GraphQLClient(
+    cache: InMemoryCache(),
+    link: link,
+  ),
+);
+
+final Link link = authLink.concat(httpLink);
+const String MIN_DATETIME = '2020-01-01 09:23:10';
+const String MAX_DATETIME = '2025-06-03 21:11:00';
+const String INIT_DATETIME = '2020-05-16 09:00:00';
+
+class _CreateIncidentState extends State<CreateIncident> {
+  final String projectName;
+  final String buttonName;
+  final String graphQLtoken;
+
+  String _name = "";
+  String _recomendation = "InAppTestRecomendation";
+  String _comment = "";
+  String _work = "74994";
+  String _managerid = "51";
+  String _projectId = "1";
+  String _constructiveId = "74990";
+  String _resolved = "false";
+  String _resolvedUntil = "2020-06-30T01:36:36+00:00";
+
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _recomendationController = TextEditingController();
+  TextEditingController _commentController = TextEditingController();
+  TextEditingController _workController = TextEditingController();
+  TextEditingController _manageridController = TextEditingController();
+  TextEditingController _projectIdController = TextEditingController();
+  TextEditingController _constructiveIdController = TextEditingController();
+  TextEditingController _resolvedController = TextEditingController();
+  TextEditingController _resolvedUntilController = TextEditingController();
+
+  _CreateIncidentState({this.projectName, this.buttonName, this.graphQLtoken});
+
+  bool _showTitle = true;
+  String _format = 'dd, MM, yyyy EEE,HH:mm';
+
+/*
+  String _format = 'YYYY-MM-DDTHH:mm:ssZ';
+*/
+
+/*
+  'yy年M月d日    EEE,H时:m分';
+*/
+  DateTime _dateTime;
+  TextEditingController _formatCtrl = TextEditingController();
+  DateTimePickerLocale _locale = DateTimePickerLocale.ru;
+
+  @override
+  void initState() {
+    super.initState();
+    _formatCtrl.text = _format;
+    _dateTime = DateTime.parse(INIT_DATETIME);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GraphQLProvider(
+        client: client,
+        child: Mutation(
+          options: MutationOptions(
+            documentNode: gql(GraphQLQueries().createIncidentMutation(
+              _name,
+              _recomendation,
+              _comment,
+              _work,
+              _managerid,
+              _projectId,
+              _constructiveId,
+              _resolved,
+              _resolvedUntil,
+            )), // this is the mutation string you just created
+            // you can update the cache based on results
+            update: (Cache cache, QueryResult result) {
+              return cache;
+            },
+            // or do something with the result.data on completion
+            onCompleted: (dynamic resultData) {
+              Fluttertoast.showToast(
+                  msg: "Нарушение сохранено",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.TOP,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: mstroyLightBlue,
+                  textColor: white,
+                  fontSize: 16.0);
+              print(resultData);
+            },
+          ),
+          builder: (
+            RunMutation runMutation,
+            QueryResult result,
+          ) {
+            return Scaffold(
+                appBar: OftenAppBar().mainAppBar("Нарушение"),
+                body: SingleChildScrollView(
+                  child: SafeArea(
+                      child: Column(
+                    children: <Widget>[
+                      Container(
+                          height: MediaQuery.of(context).size.height - 100,
+                          child: CustomScrollView(
+                            shrinkWrap: true,
+                            slivers: <Widget>[
+                              SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                    (BuildContext context, int index) {
+                                  return SingleChildScrollView(
+                                      child: Column(children: <Widget>[
+                                    Container(
+                                      margin: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: Colors.blueAccent)),
+                                      child: Column(
+                                        children: <Widget>[
+                                          Text(" № $index"),
+                                          Text("Категория"),
+                                          Text("-Замечание"),
+                                          Text("-Предписание"),
+                                          Text(
+                                              "-Предписание о приостановке работ"),
+                                          Text("Проект"),
+                                          Text(projectName),
+                                          Text("Нарушение"),
+                                          _nameTextField(_nameController,
+                                              "Кратко назовите нарушение", 20),
+                                          Text("Описание"),
+                                          _commentTextField(_commentController,
+                                              "Подробно опишите замечание", 20),
+                                          Text("Конструктив"),
+                                          Text("Конструктив (описание)"),
+                                          Text("Вид работ"),
+                                          Text(
+                                            "Дата",
+                                            style: TextStyle(fontSize: 20),
+                                          ),
+                                          Text(
+                                            "${NormalDate().formatDateInCreateView(DateTime.now())}",
+                                            style: TextStyle(fontSize: 20),
+                                          ),
+                                          Text("Нарушение зафиксировал"),
+                                          Center(
+                                              child: new DropdownButton(
+                                            items: new List.generate(20,
+                                                (int index) {
+                                              return new DropdownMenuItem(
+                                                  child: new Container(
+                                                child: new Text("ФИО#$index"),
+                                                width: 200.0, //200.0 to 100.0
+                                              ));
+                                            }),
+                                            onChanged: (value) {},
+                                          )),
+                                          Text("ФИО (роль)"),
+                                          Container(
+                                              margin: EdgeInsets.all(10),
+                                              child: WorkWithCamera()),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: Colors.blueAccent)),
+                                      child: Column(
+                                        children: <Widget>[
+                                          Text("Решение"),
+                                          Text("Срок устранения"),
+                                          Text("Рекомендации"),
+                                          _recomendationTextField(
+                                              _recomendationController,
+                                              "Рекомендации",
+                                              20),
+                                          Text("Подписать"),
+                                          Text("Подписано СК"),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.all(10),
+                                      height: 1000,
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: Colors.blueAccent)),
+                                      child: Column(
+                                        children: <Widget>[
+                                          Text("Статус нарушения"),
+                                          Text("Принято в работу"),
+                                          Text("Готово к проверке"),
+                                        ],
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                          border: Border.all(
+                                              color: Colors.blueAccent)),
+                                      child: Column(
+                                        children: <Widget>[
+                                          MaterialButton(
+                                              onPressed: () {},
+                                              textColor: white,
+                                              color: red,
+                                              child: Container(
+                                                  padding: EdgeInsets.only(
+                                                      left: 45,
+                                                      top: 4,
+                                                      right: 45,
+                                                      bottom: 4),
+                                                  child: Text(
+                                                    "Удалить",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w400),
+                                                  ))),
+                                          MaterialButton(
+                                              onPressed: () {},
+                                              textColor: white,
+                                              color: Colors.grey,
+                                              child: Container(
+                                                  padding: EdgeInsets.only(
+                                                      left: 45,
+                                                      top: 4,
+                                                      right: 45,
+                                                      bottom: 4),
+                                                  child: Text(
+                                                    "отменить",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w400),
+                                                  ))),
+                                          MaterialButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  _name = _nameController.text;
+                                                });
+                                                print(_name);
+                                                runMutation({
+                                                  _name: _nameController.text
+                                                });
+                                                print(_name);
+                                                Fluttertoast.showToast(
+                                                    msg:
+                                                        "Выполняется сохранение нарушения",
+                                                    toastLength:
+                                                        Toast.LENGTH_SHORT,
+                                                    gravity: ToastGravity.TOP,
+                                                    timeInSecForIosWeb: 1,
+                                                    backgroundColor:
+                                                        mstroyLightBlue,
+                                                    textColor: white,
+                                                    fontSize: 16.0);
+                                              },
+                                              textColor: white,
+                                              color: Colors.lightGreen,
+                                              child: Container(
+                                                  padding: EdgeInsets.only(
+                                                      left: 45,
+                                                      top: 4,
+                                                      right: 45,
+                                                      bottom: 4),
+                                                  child: Text(
+                                                    "сохранить",
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w400),
+                                                  ))),
+                                        ],
+                                      ),
+                                    ),
+                                  ]));
+                                }, childCount: 1),
+                              )
+                            ],
+                          ))
+                    ],
+                  )),
+                ));
+          },
+        ));
+  }
+
+  Widget _nameTextField(TextEditingController controller, String hintText,
+      double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          onChanged: (value) {
+            _name = value;
+          },
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: mstroyLightBlue),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+  Widget _recomendationTextField(TextEditingController controller,
+      String hintText, double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          onChanged: (value) {
+            _recomendation = value;
+          },
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: mstroyLightBlue),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+  Widget _commentTextField(TextEditingController controller, String hintText,
+      double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          onChanged: (value) {
+            _comment = value;
+          },
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: mstroyLightBlue),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+  Widget _workTextField(TextEditingController controller, String hintText,
+      double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          onChanged: (value) {
+            _work = value;
+          },
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: mstroyLightBlue),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+  Widget _managerIdTextField(TextEditingController controller, String hintText,
+      double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          onChanged: (value) {
+            _managerid = value;
+          },
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: mstroyLightBlue),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+  Widget _projectIdTextField(TextEditingController controller, String hintText,
+      double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          onChanged: (value) {
+            _projectId = value;
+          },
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: mstroyLightBlue),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+  Widget _constructiveIdTextField(TextEditingController controller,
+      String hintText, double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          onChanged: (value) {
+            _constructiveId = value;
+          },
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: mstroyLightBlue),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+  Widget _resolvedTextField(TextEditingController controller, String hintText,
+      double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          onChanged: (value) {
+            _resolved = value;
+          },
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: mstroyLightBlue),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+  Widget _resolvedUntilTextField(TextEditingController controller,
+      String hintText, double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          onChanged: (value) {
+            _resolvedUntil = value;
+          },
+          controller: controller,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: mstroyLightBlue),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+/*  Scaffold(
+  appBar: AppBar(
+  title: Text("Нарушение"),
+  backgroundColor: mstroyLightBlue,
+  ),
+  body: SingleChildScrollView(
+  child: SafeArea(
+  child: Column(
+  children: <Widget>[
+  Container(
+  height: MediaQuery.of(context).size.height - 100,
+  child: CustomScrollView(
+  shrinkWrap: true,
+  slivers: <Widget>[
+  SliverList(
+  delegate: SliverChildBuilderDelegate(
+  (BuildContext context, int index) {
+  return SingleChildScrollView(
+  child: Column(children: <Widget>[
+  Container(
+  margin: EdgeInsets.all(10),
+  decoration: BoxDecoration(
+  border: Border.all(color: Colors.blueAccent)),
+  child: Column(
+  children: <Widget>[
+  Text(" № $index"),
+  Text("Категория"),
+  Text("-Замечание"),
+  Text("-Предписание"),
+  Text("-Предписание о приостановке работ"),
+  Text("Проект"),
+  Text(projectName),
+  Text("Нарушение"),
+  Text("-Кратко назовите замечание-"),
+  Text("Описание"),
+  Text("-подробно опишите замечание-"),
+  Text("Конструктив"),
+  Text("Конструктив (описание)"),
+  Text("Вид работ"),
+  Text("Дата"),
+  Text("dd.mm.yyyy"),
+  Text("Нарушение зафиксировал"),
+  Text("ФИО (роль)"),
+  Container(
+  margin: EdgeInsets.all(10),
+  child: WorkWithCamera()),
+  ],
+  ),
+  ),
+  Container(
+  margin: EdgeInsets.all(10),
+  decoration: BoxDecoration(
+  border: Border.all(color: Colors.blueAccent)),
+  child: Column(
+  children: <Widget>[
+  Text("Решение"),
+  Text("Срок устранения"),
+  Text("Рекомендации"),
+  Text("Подписать"),
+  Text("Подписано СК"),
+  ],
+  ),
+  ),
+  Container(
+  margin: EdgeInsets.all(10),
+  height: 1000,
+  decoration: BoxDecoration(
+  border: Border.all(color: Colors.blueAccent)),
+  child: Column(
+  children: <Widget>[
+  Text("Статус нарушения"),
+  Text("Принято в работу"),
+  Text("Готово к проверке"),
+  ],
+  ),
+  ),
+  Container(
+  margin: EdgeInsets.all(10),
+  decoration: BoxDecoration(
+  border: Border.all(color: Colors.blueAccent)),
+  child: Column(
+  children: <Widget>[
+  MaterialButton(
+  onPressed: () {},
+  textColor: white,
+  color: red,
+  child: Container(
+  padding: EdgeInsets.only(
+  left: 45,
+  top: 4,
+  right: 45,
+  bottom: 4),
+  child: Text(
+  "Удалить",
+  style: TextStyle(
+  fontWeight: FontWeight.w400),
+  ))),
+  MaterialButton(
+  onPressed: () {},
+  textColor: white,
+  color: Colors.grey,
+  child: Container(
+  padding: EdgeInsets.only(
+  left: 45,
+  top: 4,
+  right: 45,
+  bottom: 4),
+  child: Text(
+  "отменить",
+  style: TextStyle(
+  fontWeight: FontWeight.w400),
+  ))),
+  MaterialButton(
+  onPressed: () {},
+  textColor: white,
+  color: Colors.lightGreenAccent,
+  child: Container(
+  padding: EdgeInsets.only(
+  left: 45,
+  top: 4,
+  right: 45,
+  bottom: 4),
+  child: Text(
+  "сохранить",
+  style: TextStyle(
+  fontWeight: FontWeight.w400),
+  ))),
+  ],
+  ),
+  ),
+  ]));
+  }, childCount: 1),
+  )
+  ],
+  ))
+  ],
+  )),
+  ));*/
+
+  Widget card(String text, String trailingText) => Container(
+      height: 100,
+      child: Card(
+          child: MaterialButton(
+              onPressed: () {},
+              child: ListTile(
+                title: Text(
+                  text,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ))));
+}
+
+/*class StarrableRepository extends StatelessWidget {
+  const StarrableRepository({
+    Key key,
+    @required this.repository,
+  }) : super(key: key);
+
+  final Map<String, Object> repository;
+
+  Map<String, Object> extractRepositoryData(Object data) {
+    final action =
+    (data as Map<String, Object>)['action'] as Map<String, Object>;
+    if (action == null) {
+      return null;
+    }
+    return action['starrable'] as Map<String, Object>;
+  }
+
+  bool get starred => repository['viewerHasStarred'] as bool;
+  bool get optimistic => (repository as LazyCacheMap).isOptimistic;
+
+  Map<String, dynamic> get expectedResult => <String, dynamic>{
+    'action': <String, dynamic>{
+      'starrable': <String, dynamic>{'viewerHasStarred': !starred}
+    }
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return
+  }*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'package:flutter/material.dart';
+import 'package:mstroy/mainclasses/WorkWithCamera.dart';
+import 'package:mstroy/construction_control/incidents/AllIncidentsEditPage.dart';
+import 'package:mstroy/construction_control/inspections/inspections/CreateInspection.dart';
+import 'package:mstroy/construction_control/incidents/CreateIncident.dart';
+import 'package:mstroy/construction_control/inspections/inspections/InspectionsEditPage.dart';
+import 'package:mstroy/construction_control/ProjectList.dart';
+import 'package:mstroy/construction_control/PageOfProject.dart';
+import 'package:mstroy/construction_control/inspections/requests_of_inspections/RequestsEditPage.dart';
+import 'package:mstroy/mainclasses/constants/RouteNames.dart';
+import 'package:mstroy/mainclasses/SplashScreen.dart';
+import 'package:mstroy/mainclasses/Authorization.dart';
+import 'package:flutter/services.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  final routes = <String, WidgetBuilder>{
+    authorizationRoute: (BuildContext context) => Authorization(),
+    projectListRoute: (BuildContext context) => ProjectList(),
+    pageOfProjectRoute: (BuildContext context) => PageOfProject(),
+    fixIncidentRoute: (BuildContext context) => CreateIncident(),
+    allIncidentsPageStateRoute: (BuildContext context) =>
+        AllIncidentsEditPage(),
+    createInspectionRoute: (BuildContext context) => CreateInspection(),
+    inspectionEditPageRoute: (BuildContext context) => InspectionsEditPage(),
+    requestsEditPageRoute: (BuildContext context) => RequestsEditPage(),
+    workWithCameraRoute: (BuildContext context) => WorkWithCamera(),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'MStroy',
+      home: SplashScreen(nextRoute: authorizationRoute),
+      routes: routes,
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:http/http.dart' as http;
+import 'package:mstroy/mainclasses/constants/RouteNames.dart';
+import 'package:mstroy/mainclasses/constants/urls.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'constants/MSColors.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+
+class Authorization extends StatefulWidget {
+  Authorization({Key key}) : super(key: key);
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+var underLineColor = blue;
+
+class _MyHomePageState extends State<Authorization> {
+  TextEditingController loginController = TextEditingController(),
+      passwordController = TextEditingController();
+  var authTextTitle = "Авторизация";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: backgroundWhite,
+      body: Center(
+          child: SafeArea(
+              child: Container(
+        padding: EdgeInsets.only(left: 25, top: 40, right: 25, bottom: 40),
+        decoration: BoxDecoration(
+            color: white,
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+            boxShadow: [
+              BoxShadow(
+                  color: greyOpacity0_5,
+                  spreadRadius: 6,
+                  blurRadius: 15,
+                  offset: Offset(0, 5))
+            ]),
+        height: 369,
+        width: 350,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              margin: EdgeInsets.only(top: 5, bottom: 20),
+              padding: EdgeInsets.only(bottom: 20),
+              child: Text(
+                authTextTitle,
+                style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 24.0,
+                    color: darkBlue),
+              ),
+            ),
+            _textField(loginController, loginIco, false, "Email", 0),
+            _textField(passwordController, passwordIco, true, "Пароль", 20),
+            _enterButton()
+          ],
+        ),
+      ))),
+    );
+  }
+
+  Widget _textField(TextEditingController controller, Widget ico, bool obscure,
+      String hintText, double containerMargin) {
+    return Container(
+      width: 300,
+      margin: EdgeInsets.only(top: containerMargin, bottom: containerMargin),
+      decoration: BoxDecoration(
+        color: backgroundWhite,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(4),
+            topRight: Radius.circular(4),
+            bottomRight: Radius.circular(1),
+            bottomLeft: Radius.circular(1)),
+      ),
+      child: TextField(
+          controller: controller,
+          obscureText: obscure,
+          decoration: InputDecoration(
+            suffixIcon: Container(
+              child: ico,
+              padding: EdgeInsets.all(14),
+            ),
+            border: InputBorder.none,
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: underLineColor),
+            ),
+            errorBorder: InputBorder.none,
+            disabledBorder: InputBorder.none,
+            contentPadding:
+                EdgeInsets.only(left: 15, bottom: 11, top: 11, right: 15),
+            hintText: hintText,
+          )),
+    );
+  }
+
+  Widget _enterButton() {
+    return Container(
+        width: 150,
+        height: 46,
+        margin: EdgeInsets.only(top: 31),
+        child: MaterialButton(
+            onPressed: () {
+              _checkInputOnNull();
+            },
+            textColor: white,
+            color: blue,
+            child: Container(
+              padding: EdgeInsets.only(top: 4, bottom: 4),
+              child: Text(
+                "Войти",
+                style: TextStyle(fontWeight: FontWeight.w400, fontSize: 16),
+              ),
+            )));
+  }
+
+  Future<void> _checkInputOnNull() async {
+    try {
+      String login = loginController.text;
+      String password = passwordController.text;
+
+      if (login == '' || password == '') {
+        Fluttertoast.showToast(
+            msg: "Заполните все поля",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 1,
+            backgroundColor: red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      } else {
+        Map authData = {
+          "email": loginController.text,
+          "password": passwordController.text
+        };
+
+//TODO: сделать что-то, что будет показывать, что производится вход в систему
+        Fluttertoast.showToast(
+            msg: "Выполняется вход в систему!",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 1,
+            backgroundColor: lightBlue,
+            textColor: Colors.white,
+            fontSize: 16.0);
+
+        var body = json.encode(authData);
+        var authResponse = await http.post(authApiUrl,
+            headers: {"Content-type": "application/json;charset=utf-8"},
+            body: body);
+
+        print(authResponse.body);
+        var authResponseJson = jsonDecode(authResponse.body);
+
+        if (authResponseJson["status"] == "success") {
+          Fluttertoast.showToast(
+              msg:
+                  "Вход выполнен\n\nПользователь: ${authResponseJson["user"]["username"]}",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 1,
+              backgroundColor: lightBlue,
+              textColor: white,
+              fontSize: 17.0);
+          var writeJsonData = _write(authResponse.body);
+          print(writeJsonData);
+          addBoolToSF(true);
+          Navigator.of(context).pushReplacementNamed(projectListRoute);
+        } else {
+          Fluttertoast.showToast(
+              msg: "Ошибка входа, проверьте введёные данные",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.TOP,
+              timeInSecForIosWeb: 1,
+              backgroundColor: red,
+              textColor: white,
+              fontSize: 16.0);
+        }
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+          msg: "Что-то пошло не так, попробуйте снова!",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 1,
+          backgroundColor: red,
+          textColor: white,
+          fontSize: 16.0);
+    }
+  }
+}
+
+addBoolToSF(bool booleanVal) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setBool('authCheck', booleanVal);
+}
+
+final String loginAssetname = 'images/authorization_login_ico.svg';
+final Widget loginIco = SvgPicture.asset(loginAssetname, semanticsLabel: 'ico');
+final String passwordAssetName = 'images/authorization_password_ico.svg';
+final Widget passwordIco =
+    SvgPicture.asset(passwordAssetName, semanticsLabel: 'ico');
+
+_write(String text) async {
+  final Directory directory = await getApplicationDocumentsDirectory();
+  final File file = File('${directory.path}/my_file.txt');
+  await file.writeAsString(text);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'dart:convert';
+import 'dart:core';
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+
+class SplashScreen extends StatefulWidget {
+  final String nextRoute;
+
+  SplashScreen({this.nextRoute});
+
+  @override
+  State<StatefulWidget> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Timer(Duration(seconds: 1), () async {
+      Future<String> text;
+      String graphQLtoken;
+      final Future<Directory> directory = getApplicationDocumentsDirectory();
+      try {
+        final Future<File> file = directory
+            .then((value) => File('${value.path}/my_file.txt'))
+            .catchError((onError) =>
+                Navigator.of(context).pushReplacementNamed(widget.nextRoute));
+
+        text = file.then((value) => value.readAsString());
+        var jsonText = text.then((value) => jsonDecode(value.toString()));
+
+        var s = await jsonText.then((value) => value);
+        print(s);
+
+        jsonText.then((value) => {
+              if (value["Authorization"].toString() == "" ||
+                  value["Authorization"] == "" ||
+                  value["Authorization"].toString() == null ||
+                  graphQLtoken == null ||
+                  graphQLtoken.toString() == "Instance of 'Future<String>'")
+                {Navigator.of(context).pushReplacementNamed('/RenameList')}
+              else
+                {Navigator.of(context).pushReplacementNamed(widget.nextRoute)}
+            });
+      } catch (e) {
+        Navigator.of(context).pushReplacementNamed(widget.nextRoute);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              height: 400,
+              width: 400,
+              child: logoIco,
+              padding: EdgeInsets.all(0),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+bool checkAuthBool;
+
+final String logoAssetName = 'images/mstroy_vertical.svg';
+final Widget logoIco = SvgPicture.asset(logoAssetName, semanticsLabel: 'ico');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+class WorkWithCamera extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return new UserOptionsState();
+  }
+}
+
+class UserOptionsState extends State<WorkWithCamera> {
+//save the result of gallery file
+  File galleryFile;
+
+//save the result of camera file
+  File cameraFile;
+
+  @override
+  Widget build(BuildContext context) {
+    //display image selected from gallery
+    imageSelectorGallery() async {
+      galleryFile = await ImagePicker.pickImage(
+        source: ImageSource.gallery,
+        //Max size of picture
+        //  maxHeight: 50.0,
+        //  maxWidth: 50.0,
+      );
+      print("You selected gallery image : " + galleryFile.path);
+      setState(() {});
+    }
+
+    //display image selected from camera
+    imageSelectorCamera() async {
+      cameraFile = await ImagePicker.pickImage(
+        source: ImageSource.camera,
+        //Max size of picture
+        //  maxHeight: 50.0,
+        //  maxWidth: 50.0,
+      );
+      print("You selected camera image : " + cameraFile.path);
+      setState(() {});
+    }
+
+    return new Builder(
+      builder: (BuildContext context) {
+        return new Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            new RaisedButton(
+              child: new Text('Галерея'),
+              onPressed: imageSelectorGallery,
+            ),
+            new RaisedButton(
+              child: new Text('Камера'),
+              onPressed: imageSelectorCamera,
+            ),
+            displaySelectedFile(galleryFile),
+            displaySelectedFile(cameraFile)
+          ],
+        );
+      },
+    );
+  }
+
+  Widget displaySelectedFile(File file) {
+    return new ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: 200, maxWidth: 300),
+      child: SizedBox(
+        child: file == null ? null : new Image.file(file),
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class GraphQLQueries {
+  // Все инспекции по айди проекта
+  String inspectionRequestsFromProjectId(rowIdOfProject) {
+    return """
+query findAllInspectionRequests {
+  allInspectionRequests(filters:{projectIdEq:$rowIdOfProject}){
+    id
+    comment
+    constructive
+    managerId
+    projectId
+    constructiveId
+    planDate
+    manager{
+      name
+    }
+    project{
+      id
+      name
+    }
+    rowId
+  }
+}
+""";
+  }
+
+  String inspectionRequests() {
+    return """
+query findAllInspectionRequests {
+  allInspectionRequests{
+    id
+    comment
+    constructive
+    managerId
+    projectId
+    constructiveId
+    planDate
+    manager{
+      name
+    }
+    project{
+      id
+      name
+    }
+    rowId
+  }
+}
+""";
+  }
+
+  // Все проекты
+  String projectList() {
+    return """
+query projectsList {
+  allProjects{
+    name
+    shortName
+    rowId
+  }
+}
+  """;
+  }
+
+  // Все конструктивы
+  String constructiveList() {
+    return """
+query constructives {
+  allConstructives{
+    id
+    name
+    code
+    measureUnitId
+    parentElementId
+    projectId
+    elementType
+    isComplete
+    constructiveTypeId
+    rowId
+  }
+}
+    """;
+  }
+
+  // Все инциденты
+  String incidentList() {
+    return """
+query findIncidents {
+  allIncidents{
+    id
+    comment
+    name
+    constructive
+    managerId
+    projectId
+    constructiveId
+    work
+    descritpion
+    deleted
+    stopWorkUntil
+    resolveUntil
+    recommendation
+    resolved
+    category
+    manager{
+      id
+      name
+      participationBegin
+      participationFinish
+      projectId
+      role
+      rowId
+    }
+    rowId
+  }
+}
+    """;
+  }
+
+  String incidentListFromProjectId(rowIdOfProject) {
+    return """
+query findIncidentsFromProjectId {
+  allIncidents(filters: {projectIdEq: $rowIdOfProject}){
+    id
+    comment
+    constructive
+    managerId
+    projectId
+    constructiveId
+    work
+    name
+    descritpion
+    stopWorkUntil
+    resolveUntil
+    recommendation
+    category
+    manager{
+      id
+      name
+      participationBegin
+      participationFinish
+      role
+      rowId
+    }
+    rowId
+  }
+}
+    """;
+  }
+
+  String inspectionsRowId(rowId) {
+    return """
+query findAllInspections{
+  allInspections(filters: {projectIdEq: $rowId}){
+    rowId
+  }
+}
+    """;
+  }
+
+  String userInfo(String email) {
+    return """
+  query q {
+allUsers(filters: {EmailEq: "$email"}){
+  roles{
+    name
+    description
+  }
+}
+}
+""";
+  }
+
+  String allProjectQuery() {
+    return """
+  query allProjectQuery {
+   allProjects{
+     id
+     shortName
+     rowId
+     name
+    }
+  }
+""";
+  }
+
+  String allNotifyFromIdOfProject(projectRowId) {
+    return """
+    query q{
+  allInspectionRequests(filters: {projectIdEq: $projectRowId}){
+    rowId
+  }
+  allInspections(filters: {projectIdEq: $projectRowId}){
+    rowId
+  }
+  allIncidents(filters: {projectIdEq:$projectRowId}){
+    rowId
+  }
+}
+
+    """;
+  }
+
+  String incidentNotifyFromIdOfProject(projectRowId) {
+    return """
+    query q1{
+  allIncidents(filters: {projectIdEq:$projectRowId}){
+    rowId
+  }
+}
+
+    """;
+  }
+
+  String inspectionNotifyFromIdOfProject(projectRowId) {
+    return """
+query q2{
+  allInspectionRequests(filters: {projectIdEq: 1}){
+    rowId
+  }
+  allInspections(filters: {projectIdEq: 1}){
+    rowId
+  }
+}
+    """;
+  }
+
+  String createIncidentMutation(
+    name,
+    recomendation,
+    comment,
+    work,
+    managerid,
+    projectId,
+    constructiveId,
+    resolved,
+    resolvedUntil,
+  ) {
+    return """
+mutation createIncident{
+  createIncident(input: {
+    comment: "$comment",
+    work: "$work",
+    managerId: $managerid,
+    projectId: $projectId,
+    constructiveId: $constructiveId,
+    resolved:$resolved,
+   resolveUntil: "$resolvedUntil",
+ recommendation:"$recomendation",
+    name:"$name",
+  }){
+    incident{
+      id
+      comment
+      constructive
+      work
+      managerId
+    }
+   ok 
+  }
+}
+    """;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'package:flutter/material.dart';
+
+/*
+var mstroyBlue = const Color(0xff4f67a3);
+var mstroyLightBlue = const Color(0xff4096c9);
+*/
+
+var white = Colors.white;
+var backgroundWhite = const Color(0xFFF4F7FA);
+var newBackgroundWhite2 = const Color(0xFFF7F9FC);
+var newBackgroundWhite = const Color(0xFFE5E5E5);
+var greyOpacity0_5 = Colors.grey.withOpacity(0.5);
+var inspectionEditPageBackground = const Color(0xffE5E5E5);
+var trailingBackgroundColor = const Color(0xC751586D);
+var filterIncidentSelectedColor = const Color(0xFF38363A);
+var filterInspectionSelectedColor = const Color(0xFF1B3E51);
+var newDarkBlue = const Color(0xff2E3A59);
+var darkBlue = const Color(0xff132B4D);
+var mstroyBlue = const Color(0xff4976b0);
+var mstroyLightBlue = const Color(0xff4789bf);
+var newButtonMstroyBlue = const Color(0xFF1588C5);
+var blue = const Color(0xFF4774e8);
+var leadingBlue = const Color(0xFF1890FF);
+var newMstroyBlue = const Color(0xFF1890FF);
+var lightBlue = const Color(0xff00A1e7);
+var newRed = const Color(0xFFEAB5CD);
+var leadingRed = const Color(0xFFFD638D);
+var newLeadingRed = const Color(0xFFDD5153);
+var red = const Color(0xFFd40069);
+var redTrailing = const Color(0xFFDD5153);
+var filterIncidentUnSelectedColor = const Color(0xFF7C4647);
+var filterInspectionUnSelectedColor = const Color(0xFF2F7194);
+var leadingYellow = const Color(0xFFFFC94D);
+var inspectionEditPageButtonYellow = const Color(0xFFFFAA00);
+var inspectionEditPageButtonGreen = const Color(0xFF06C019);
+var inspectionEditPageRequestsGreen = const Color(0xFFDFFAE1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class NormalDate {
+  ///input type ISO8601
+  String reDate(String isoDatetime) {
+    var datetimeSplitStr = "$isoDatetime".split("T")[0];
+    var dateSplit = datetimeSplitStr.split("-");
+    var yearStr = dateSplit[0];
+    var mounthStr = dateSplit[1];
+    var dayStr = dateSplit[2];
+    return "$dayStr.$mounthStr.$yearStr";
+  }
+
+  ///input type 2020-06-24 10:24:40.370553
+  String formatDateInISO(DateTime dateTime) {
+    var timeZoneOffset = dateTime.timeZoneOffset;
+    var datetimeSplitStr = "$dateTime".split(" ");
+    var dateSplit = datetimeSplitStr[0].split("-");
+    var timeSplit = datetimeSplitStr[1].split(".")[0].split(":");
+    var timezoneOffsetHour = "$timeZoneOffset".split(".")[0].split(":")[0];
+    var timezoneOffsetMin = "$timeZoneOffset".split(".")[0].split(":")[1];
+    if (int.parse("$timezoneOffsetHour") < 10) {
+      return "${dateSplit[0]}-${dateSplit[1]}-${dateSplit[2]}T${int.parse(timeSplit[0]) - 5}:${timeSplit[1]}:${timeSplit[2]}+0$timezoneOffsetHour:$timezoneOffsetMin";
+    } else {
+      return "${dateSplit[0]}-${dateSplit[1]}-${dateSplit[2]}T${int.parse(timeSplit[0]) - 5}:${timeSplit[1]}:${timeSplit[2]}+$timezoneOffsetHour:$timezoneOffsetMin";
+    }
+  }
+
+  String formatDateInCreateView(DateTime dateTime) {
+    var datetimeSplitStr = "$dateTime".split(" ");
+    var dateSplit = datetimeSplitStr[0].split("-");
+    return "${dateSplit[2]}.${dateSplit[1]}.${dateSplit[0]}";
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'package:flutter/material.dart';
+import 'package:mstroy/mainclasses/constants/MSColors.dart';
+
+class OftenAppBar {
+  AppBar mainAppBar(title) {
+    return AppBar(
+      elevation: 0.0,
+      iconTheme: IconThemeData(color: newDarkBlue),
+      title: Text(
+        title,
+        style: TextStyle(color: newDarkBlue),
+      ),
+      backgroundColor: newBackgroundWhite,
+    );
+  }
+
+  AppBar incidentAppBar(title) {
+    return AppBar(
+      elevation: 0.0,
+      title: Text(
+        title,
+        style: TextStyle(color: white),
+      ),
+      backgroundColor: newLeadingRed,
+    );
+  }
+
+  AppBar inspectionAppBar(title) {
+    return AppBar(
+      elevation: 0.0,
+      title: Text(
+        title,
+        style: TextStyle(color: white),
+      ),
+      backgroundColor: newButtonMstroyBlue,
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'dart:async';
+import 'dart:core';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mstroy/mainclasses/constants/OftenAppBar.dart';
+import 'package:mstroy/construction_control/incidents/CastIncidentFilter.dart';
+import 'package:mstroy/construction_control/inspections/CastInspectionFilter.dart';
+import 'package:mstroy/construction_control/inspections/inspections/CreateInspection.dart';
+import 'package:mstroy/construction_control/incidents/CreateIncident.dart';
+import 'package:mstroy/mainclasses/constants/GraphQLQueries.dart';
+import 'package:mstroy/mainclasses/constants/MSColors.dart';
+import 'package:mstroy/mainclasses/constants/urls.dart';
+
+class PageOfProject extends StatefulWidget {
+  final String projectName;
+  final String shortName;
+  final String graphQLtoken;
+  final String rowIdOfProject;
+  final String idOfProject;
+
+  PageOfProject(
+      {this.projectName,
+      this.shortName,
+      this.graphQLtoken,
+      this.rowIdOfProject,
+      this.idOfProject});
+
+//TODO: Сделать определённый State для определённой роли
+  @override
+  State<StatefulWidget> createState() {
+    if (this.projectName == "Сделать state по роли") {
+      return _PageOfProjectState2(
+          projectName: "SECOND STATE", graphQLtoken: graphQLtoken);
+    } else {
+      return _PageOfProjectState(
+          projectName: projectName,
+          shortName: shortName,
+          graphQLtoken: graphQLtoken,
+          rowIdOfProject: rowIdOfProject,
+          idOfProject: idOfProject);
+    }
+  }
+}
+
+final AuthLink authLink = AuthLink(
+  getToken: () async => graphQLtoken.toString(),
+);
+
+final HttpLink httpLink = HttpLink(
+  uri: graphQLUrl,
+);
+ValueNotifier<GraphQLClient> client = ValueNotifier(
+  GraphQLClient(
+    cache: InMemoryCache(),
+    link: link,
+  ),
+);
+final Link link = authLink.concat(httpLink);
+double devicePR = 0.0;
+
+class _PageOfProjectState extends State<PageOfProject> {
+  final String projectName;
+  final String shortName;
+  final String graphQLtoken;
+  int _allIncidentsCount = 0;
+  int _incidentsOnTheCheckCount = 0;
+  int _registerOfRequestsCount = 0;
+  int _registerOfInspectionsCount = 0;
+  final String rowIdOfProject;
+  final String idOfProject;
+
+  _PageOfProjectState(
+      {this.projectName,
+      this.shortName,
+      this.graphQLtoken,
+      this.rowIdOfProject,
+      this.idOfProject});
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  var redOpacity = const Color(0x591890FF);
+
+  var textColor = newDarkBlue;
+  var trailingBackColor = trailingBackgroundColor;
+  var createButtonColor = newMstroyBlue;
+  var listTileColor = newBackgroundWhite2;
+  var trailingBorderRadius = BorderRadius.all(Radius.circular(50));
+  var leadingBorderRadius = BorderRadius.only(
+      bottomLeft: Radius.circular(4 * devicePR / 2),
+      topLeft: Radius.circular(4 * devicePR / 2));
+  var buttonBodrerRadius = BorderRadius.only(
+      bottomRight: Radius.circular(4 * devicePR / 2),
+      topRight: Radius.circular(4 * devicePR / 2));
+
+  var buttonFontWeight = FontWeight.w200;
+  var buttonFontWeight2 = FontWeight.w300;
+
+  @override
+  Widget build(BuildContext context) {
+    devicePR = MediaQuery.of(context).devicePixelRatio;
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+    var textSize = 14.toDouble() * devicePR / 2;
+    var leadingWidth = 6.toDouble() * devicePR / 2;
+    var buttonFontSize = 40.toDouble() * devicePR / 2;
+    var contentPadding =
+        EdgeInsets.only(top: 0, left: 15, right: 10, bottom: 4 * devicePR / 2);
+    var fixButtonMargin = EdgeInsets.only(
+        left: 10, right: 10, top: 18, bottom: 12 * devicePR / 2);
+    var fixButtonSize = 14.toDouble() * devicePR / 2.1;
+    var trailingTextSize = 14.toDouble() * devicePR;
+    trailingTextSize = 14.toDouble() * devicePR / 2;
+
+    setState(() {
+      devicePR = MediaQuery.of(context).devicePixelRatio;
+      trailingTextSize = 14.toDouble() * devicePR / 2;
+    });
+
+    var leadingMargin = EdgeInsets.only(left: 12, bottom: 4 * devicePR / 2);
+    var buttonMargin = EdgeInsets.only(top: 0, bottom: 4 * devicePR / 2);
+    var buttonPadding =
+        EdgeInsets.only(top: 4 * devicePR / 2, bottom: 4 * devicePR / 2);
+
+    var buttonWidth = 318.toDouble() / devicePR * 3;
+    var buttonHeight = 35.toDouble() * devicePR / 2 + 2;
+    var trailingWidth = 36.toDouble() * devicePR / 2;
+    var trailingHeight = 23.toDouble() * devicePR / 2;
+    var leadingHeight = buttonHeight;
+
+    Widget buttonRow(leadingColor, buttonPressedText, buttonText, fontWeight,
+        notifyWidget, trailingBackgroundColor) {
+      return Row(
+        children: <Widget>[
+          Container(
+            margin: leadingMargin,
+            height: leadingHeight,
+            width: leadingWidth,
+            decoration: BoxDecoration(
+                color: leadingColor, borderRadius: leadingBorderRadius),
+          ),
+          Container(
+              height: buttonHeight,
+              margin: buttonMargin,
+              width: buttonWidth,
+              decoration: BoxDecoration(
+                  borderRadius: buttonBodrerRadius, color: listTileColor),
+              child: Container(
+                  child: Row(children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(left: 5),
+                  width: (172 + 60) * devicePR / 2,
+                  child: MaterialButton(
+                    onLongPress: () {},
+                    onPressed: () {
+                      _onButtonPressed(buttonPressedText);
+                    },
+                    child: Align(
+                      child: Text(
+                        buttonText,
+                        style: TextStyle(
+                            color: textColor,
+                            fontSize: textSize,
+                            fontWeight: fontWeight),
+                      ),
+                      alignment: Alignment.centerLeft,
+                    ),
+                  ),
+                ),
+                Container(
+                    width: trailingWidth,
+                    height: trailingHeight,
+                    decoration: BoxDecoration(
+                      color: trailingBackgroundColor,
+                      borderRadius: trailingBorderRadius,
+                    ),
+                    child: Center(
+                      child: notifyWidget,
+                    )),
+              ]))),
+        ],
+      );
+    }
+
+    Widget buttonRowAll(leadingColor, buttonPressedText, buttonText, fontWeight,
+        notifyWidget, trailingBackgroundColor) {
+      return Row(
+        children: <Widget>[
+          Container(
+            margin: leadingMargin,
+            height: leadingHeight,
+            width: leadingWidth,
+            decoration: BoxDecoration(
+                color: leadingColor, borderRadius: leadingBorderRadius),
+          ),
+          Container(
+              height: buttonHeight,
+              margin: buttonMargin,
+              width: buttonWidth,
+              decoration: BoxDecoration(
+                  borderRadius: buttonBodrerRadius, color: listTileColor),
+              child: Container(
+                  child: Row(children: <Widget>[
+                Container(
+                  width: (172 + 60) * devicePR / 2,
+                  child: MaterialButton(
+                    onLongPress: () {},
+                    onPressed: () {
+                      _onButtonPressed(buttonPressedText);
+                    },
+                    child: Align(
+                      child: Text(
+                        buttonText,
+                        style: TextStyle(
+                            color: textColor,
+                            fontSize: textSize,
+                            fontWeight: fontWeight),
+                      ),
+                      alignment: Alignment.centerLeft,
+                    ),
+                  ),
+                ),
+                Container(
+                    width: trailingWidth,
+                    height: trailingHeight,
+                    decoration: BoxDecoration(
+                      color: trailingBackgroundColor,
+                      borderRadius: trailingBorderRadius,
+                    ),
+                    child: Center(
+                      child: notifyWidget,
+                    )),
+              ]))),
+        ],
+      );
+    }
+
+    return GraphQLProvider(
+        client: client,
+        child: Scaffold(
+            backgroundColor: newBackgroundWhite,
+            //AppBar
+            appBar: OftenAppBar().mainAppBar(shortName),
+
+            //Body
+            body: SafeArea(
+                child: Container(
+                    child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                //IncidentContainer
+                Container(
+                    height: 276 * devicePR / 2,
+                    width: 339 * devicePR,
+                    margin: EdgeInsets.only(
+                        top: 10, left: 10, right: 10, bottom: 10),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(
+                            Radius.circular(10 * devicePR / 2))),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            color: white,
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(10 * devicePR / 2))),
+                        child: Column(children: <Widget>[
+                          Container(
+                              height: 26 * devicePR / 2,
+                              margin: EdgeInsets.only(
+                                  top: 17 * devicePR / 3,
+                                  bottom: 15.1 * devicePR / 3),
+                              child: Text("Нарушения",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: textColor,
+                                    fontSize: 18 * devicePR / 2,
+                                  ))),
+                          Center(
+                              child: Column(
+                            children: <Widget>[
+//Неустранённые
+
+                              buttonRow(
+                                  listTileColor,
+                                  "Просрочено",
+                                  "Просрочено",
+                                  FontWeight.w600,
+                                  Text(
+                                    "0",
+                                    style: TextStyle(
+                                        color: white,
+                                        fontSize: trailingTextSize),
+                                  ),
+                                  redTrailing),
+
+                              buttonRow(
+                                  listTileColor,
+                                  "Неустранённые",
+                                  "Неустранённые",
+                                  FontWeight.w600,
+                                  Text(
+                                    "0",
+                                    style: TextStyle(
+                                        color: white,
+                                        fontSize: trailingTextSize),
+                                  ),
+                                  trailingBackColor),
+
+                              buttonRow(
+                                  listTileColor,
+                                  "На проверке incident",
+                                  "На проверке",
+                                  FontWeight.w600,
+                                  Text(
+                                    "0",
+                                    style: TextStyle(
+                                        color: white,
+                                        fontSize: trailingTextSize),
+                                  ),
+                                  trailingBackColor),
+                              buttonRowAll(
+                                  listTileColor,
+                                  "Все incident",
+                                  "Общее количество",
+                                  FontWeight.bold,
+                                  allNotifyNumIncidents(
+                                      "$rowIdOfProject", trailingTextSize),
+                                  trailingBackColor),
+
+                              Container(
+                                  height: buttonHeight,
+                                  margin: fixButtonMargin,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: MaterialButton(
+                                      elevation: 0.0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(7)),
+                                      ),
+                                      onPressed: () {
+                                        _onButtonPressed(
+                                            "Зафиксировать нарушение");
+                                      },
+                                      textColor: white,
+                                      color: newButtonMstroyBlue,
+                                      child: Container(
+                                        padding: buttonPadding,
+                                        child: Text(
+                                          "Зафиксировать нарушение",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              fontSize: fixButtonSize),
+                                        ),
+                                      ))),
+                            ],
+                          ))
+                        ]))),
+
+                Container(
+                    height: 276 * devicePR / 2,
+                    width: 339 * devicePR,
+                    margin: EdgeInsets.only(
+                        top: 10, left: 10, right: 10, bottom: 10),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(
+                            Radius.circular(10 * devicePR / 2))),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            color: white,
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(10 * devicePR / 2))),
+                        child: Column(children: <Widget>[
+                          Container(
+                              height: 26 * devicePR / 2,
+                              margin: EdgeInsets.only(
+                                  top: 17 * devicePR / 3,
+                                  bottom: 15.1 * devicePR / 3),
+                              child: Text("Инспекции",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: textColor,
+                                    fontSize: 18 * devicePR / 2,
+                                  ))),
+                          Center(
+                              child: Column(
+                            children: <Widget>[
+                              //Все
+
+                              buttonRow(
+                                  listTileColor,
+                                  "Непринятые",
+                                  "Непринятые",
+                                  FontWeight.w600,
+                                  Center(
+                                      child: Text(
+                                    "0",
+                                    style: TextStyle(
+                                        color: white,
+                                        fontSize: trailingTextSize),
+                                  )),
+                                  redTrailing),
+
+                              buttonRow(
+                                  listTileColor,
+                                  "Заявки",
+                                  "Новые заявки",
+                                  FontWeight.w600,
+                                  Center(
+                                      child: Text(
+                                    "0",
+                                    style: TextStyle(
+                                        color: white,
+                                        fontSize: trailingTextSize),
+                                  )),
+                                  trailingBackColor),
+
+                              buttonRow(
+                                  listTileColor,
+                                  "На проверке inspection",
+                                  "На проверке",
+                                  FontWeight.w600,
+                                  Center(
+                                      child: Text(
+                                    "0",
+                                    style: TextStyle(
+                                        color: white,
+                                        fontSize: trailingTextSize),
+                                  )),
+                                  trailingBackColor),
+                              buttonRowAll(
+                                  listTileColor,
+                                  "Все inspection",
+                                  "Общее количество",
+                                  FontWeight.bold,
+                                  Center(
+                                    child: allNotifyNumInspections(
+                                        rowIdOfProject, trailingTextSize),
+                                  ),
+                                  trailingBackColor),
+
+                              Container(
+                                  height: buttonHeight,
+                                  margin: fixButtonMargin,
+                                  width: MediaQuery.of(context).size.width,
+                                  child: MaterialButton(
+                                      elevation: 0.0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(7)),
+                                      ),
+                                      onPressed: () {
+                                        _onButtonPressed("Создать инспекцию");
+                                      },
+                                      textColor: white,
+                                      color: newButtonMstroyBlue,
+                                      child: Container(
+                                        padding: buttonPadding,
+                                        child: Text(
+                                          "Создать заявку на инспекцию",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              fontSize: fixButtonSize),
+                                        ),
+                                      ))),
+                            ],
+                          ))
+                        ]))),
+              ],
+            )))));
+  }
+
+  void _onButtonPressed(String buttonName) {
+    switch (buttonName) {
+      case "Зафиксировать нарушение":
+        _pushToRegister(CreateIncident(
+          projectName: projectName,
+          buttonName: buttonName,
+          graphQLtoken: graphQLtoken,
+        ));
+        break;
+      case "Просрочено":
+        _pushToRegister(CastIncidentFilter(
+          projectName: projectName,
+          rowIdOfProject: rowIdOfProject,
+          idOfProject: idOfProject,
+          graphQLtoken: graphQLtoken,
+          buttonName: buttonName,
+          selectFilter: 5,
+        ));
+        break;
+      case "Неустранённые":
+        _pushToRegister(CastIncidentFilter(
+          projectName: projectName,
+          rowIdOfProject: rowIdOfProject,
+          idOfProject: idOfProject,
+          graphQLtoken: graphQLtoken,
+          buttonName: buttonName,
+          selectFilter: 2,
+        ));
+        break;
+      case "На проверке incident":
+        _pushToRegister(CastIncidentFilter(
+          projectName: projectName,
+          rowIdOfProject: rowIdOfProject,
+          idOfProject: idOfProject,
+          graphQLtoken: graphQLtoken,
+          buttonName: "На проверке",
+          selectFilter: 4,
+        ));
+        break;
+      case "Все incident":
+        _pushToRegister(CastIncidentFilter(
+          projectName: projectName,
+          rowIdOfProject: rowIdOfProject,
+          idOfProject: idOfProject,
+          graphQLtoken: graphQLtoken,
+          buttonName: "Все",
+          selectFilter: 0,
+        ));
+        break;
+      case "Создать инспекцию":
+        _pushToRegister(CreateInspection(
+            projectName: projectName,
+            buttonName: buttonName,
+            graphQLtoken: graphQLtoken));
+        break;
+      case "Заявки":
+        _pushToRegister(CastInspectionFilter(
+          projectName: projectName,
+          buttonName: buttonName,
+          graphQLtoken: graphQLtoken,
+          selectFilter: 0,
+          idOfProject: idOfProject,
+          rowIdOfProject: rowIdOfProject,
+        ));
+        break;
+      case "Непринятые":
+        _pushToRegister(CastInspectionFilter(
+          projectName: projectName,
+          buttonName: buttonName,
+          graphQLtoken: graphQLtoken,
+          selectFilter: 2,
+          idOfProject: idOfProject,
+          rowIdOfProject: rowIdOfProject,
+        ));
+        break;
+      case "На проверке inspection":
+        _pushToRegister(CastInspectionFilter(
+          projectName: projectName,
+          buttonName: "На проверке",
+          graphQLtoken: graphQLtoken,
+          selectFilter: 4,
+          idOfProject: idOfProject,
+          rowIdOfProject: rowIdOfProject,
+        ));
+        break;
+      case "Все inspection":
+        _pushToRegister(CastInspectionFilter(
+          projectName: projectName,
+          buttonName: "Все",
+          graphQLtoken: graphQLtoken,
+          selectFilter: 0,
+          idOfProject: idOfProject,
+          rowIdOfProject: rowIdOfProject,
+        ));
+        break;
+
+      default:
+        Fluttertoast.showToast(
+            msg: "Что-то пошло не так...",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 1,
+            backgroundColor: red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        break;
+    }
+  }
+
+  Widget allNotifyNumIncidents(String rowIdOfProject, double trailingTextSize) {
+    try {
+      return Query(
+        options: QueryOptions(
+          documentNode: gql(
+              GraphQLQueries().incidentNotifyFromIdOfProject(rowIdOfProject)),
+          pollInterval: 1000,
+        ),
+        builder: (QueryResult result,
+            {VoidCallback refetch, FetchMore fetchMore}) {
+          if (result.hasException) {
+            print(result.exception);
+            return Text(
+              "?1",
+              style: TextStyle(color: white, fontSize: trailingTextSize),
+              maxLines: 1,
+            );
+          }
+
+          if (result.loading) {
+            return loadIndicator();
+          }
+          List allIncidentsJson = result.data['allIncidents'];
+
+          try {
+            var notifyLength = allIncidentsJson.length;
+            print("$notifyLength");
+            return Text(
+              "$notifyLength",
+              style: TextStyle(color: white, fontSize: trailingTextSize),
+              maxLines: 1,
+            );
+          } catch (e) {
+            print(e.toString());
+            Timer(Duration(seconds: 5), () async {});
+            return Text(
+              "?2",
+              style: TextStyle(color: white, fontSize: trailingTextSize),
+              maxLines: 1,
+            );
+          }
+        },
+      );
+    } catch (e) {
+      print(e.toString());
+      return Text(
+        "?3",
+        style: TextStyle(color: white, fontSize: trailingTextSize),
+        maxLines: 1,
+      );
+    }
+  }
+
+  Widget allNotifyNumInspections(
+      String rowIdOfProject, double trailingTextSize) {
+    try {
+      return Query(
+        options: QueryOptions(
+          documentNode: gql(
+              GraphQLQueries().inspectionNotifyFromIdOfProject(rowIdOfProject)),
+          pollInterval: 1000,
+        ),
+        builder: (QueryResult result,
+            {VoidCallback refetch, FetchMore fetchMore}) {
+          if (result.hasException) {
+            print(result.exception);
+            return Text(
+              "0",
+              style: TextStyle(color: white, fontSize: trailingTextSize),
+              maxLines: 1,
+            );
+          }
+
+          if (result.loading) {
+            return loadIndicator();
+          }
+          List allInspectionsJson = result.data['allInspections'];
+          List allInspectionRequestJson = result.data['allInspectionRequests'];
+
+          try {
+            var notifyLength =
+                allInspectionsJson.length + allInspectionRequestJson.length;
+            return Text(
+              "$notifyLength",
+              style: TextStyle(color: white, fontSize: trailingTextSize),
+              maxLines: 1,
+            );
+          } catch (e) {
+            print(e.toString());
+            return Text(
+              "0",
+              style: TextStyle(color: white, fontSize: trailingTextSize),
+              maxLines: 1,
+            );
+          }
+        },
+      );
+    } catch (e) {
+      print(e.toString());
+      return Text(
+        "0",
+        style: TextStyle(color: white, fontSize: trailingTextSize),
+        maxLines: 1,
+      );
+    }
+  }
+
+  Widget loadIndicator() {
+    return Visibility(
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        visible: true,
+        child: Container(
+            width: 20,
+            height: 20,
+            margin: EdgeInsets.only(top: 5, bottom: 5),
+            child: CircularProgressIndicator(
+              valueColor: new AlwaysStoppedAnimation<Color>(white),
+            )));
+  }
+
+  void _pushToRegister(StatefulWidget statefulWidget) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => statefulWidget));
+  }
+}
+
+class _PageOfProjectState2 extends State<PageOfProject> {
+  final String projectName;
+  final String graphQLtoken;
+  int _allIncidentsCount = 0;
+  int _incidentsOnTheCheckCount = 0;
+  int _registerOfRequestsCount = 0;
+  int _registerOfInspectionsCount = 0;
+  final String rowIdOfProject;
+  final String idOfProject;
+
+  _PageOfProjectState2(
+      {this.projectName,
+      this.graphQLtoken,
+      this.rowIdOfProject,
+      this.idOfProject});
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  var redOpacity = const Color(0x59d40069);
+
+  @override
+  Widget build(BuildContext context) {
+    print("${MediaQuery.of(context).size.height - 40}");
+    return Scaffold(
+        backgroundColor: backgroundWhite,
+        //AppBar
+        appBar: AppBar(
+          centerTitle: true,
+          title: Text(projectName),
+          backgroundColor: mstroyLightBlue,
+        ),
+        //Body
+        body: SafeArea(
+            child: Container(
+                child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            //IncidentContainer
+            Text("text")
+          ],
+        ))));
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'dart:async';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mstroy/construction_control/PageOfProject.dart';
+import 'package:mstroy/mainclasses/constants/GraphQLQueries.dart';
+import 'package:mstroy/mainclasses/constants/urls.dart';
+import 'package:mstroy/mainclasses/constants/MSColors.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mstroy/mainclasses/constants/RouteNames.dart';
+
+class ProjectList extends StatefulWidget {
+  ProjectList({Key key}) : super(key: key);
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+final HttpLink httpLink = HttpLink(
+  uri: graphQLUrl,
+);
+var graphQLtoken;
+var userName = "";
+var userEmail = "";
+final AuthLink authLink = AuthLink(
+  getToken: () async => graphQLtoken.toString(),
+);
+
+ValueNotifier<GraphQLClient> client = ValueNotifier(
+  GraphQLClient(
+    cache: InMemoryCache(),
+    link: link,
+  ),
+);
+
+final Link link = authLink.concat(httpLink);
+var color = Colors.grey.shade300;
+
+addBoolToSF(bool booleanVal) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setBool('authCheck', booleanVal);
+}
+
+double devicePR = 0.0;
+
+class _MyHomePageState extends State<ProjectList> {
+  int _selectedIndex = 0;
+  TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+  List<Widget> _widgetOptions;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  Future<void> startScreen() async {
+    // ignore: unrelated_type_equality_checks
+    if (checkAuthorizationIsNull == false) {
+      Navigator.of(context).pushReplacementNamed(authorizationRoute);
+    } else {
+      String text;
+      try {
+        final Directory directory = await getApplicationDocumentsDirectory();
+        final File file = File('${directory.path}/my_file.txt');
+        text = await file.readAsString();
+        var jsonText = jsonDecode(text);
+
+        graphQLtoken = jsonText["Authorization"].toString();
+        setState(() {
+          userName = jsonText["user"]["username"];
+          userEmail = jsonText["user"]["email"];
+        });
+      } catch (e) {
+        print("Couldn't read file");
+      }
+    }
+  }
+
+  Widget loadUserInfo() {
+    double screenHeight = MediaQuery.of(context).size.height - 290;
+    try {
+      return Query(
+        options: QueryOptions(
+          documentNode: gql(GraphQLQueries().userInfo(userEmail)),
+        ),
+        builder: (QueryResult result,
+            {VoidCallback refetch, FetchMore fetchMore}) {
+          if (result.hasException) {
+            return loadIndicate();
+          }
+
+          if (result.loading) {
+            return loadIndicate();
+          }
+
+          List allUsersInfo = result.data['allUsers'][0]['roles'];
+
+          try {} catch (e) {}
+          try {
+            return Container(
+                height: screenHeight,
+                child: CustomScrollView(
+                  shrinkWrap: true,
+                  slivers: <Widget>[
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+                        return Center(
+                            child: Text(
+                                "${allUsersInfo[index]["name"]}:  ${allUsersInfo[index]["description"]}"));
+                      }, childCount: allUsersInfo.length),
+                    )
+                  ],
+                ));
+          } catch (e) {
+            return loadIndicate();
+          }
+        },
+      );
+    } catch (e) {
+      return loadIndicate();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    startScreen();
+    devicePR = MediaQuery.of(context).devicePixelRatio;
+
+    _widgetOptions = <Widget>[
+      projectListWidget(),
+      Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
+              color: newBackgroundWhite,
+              borderRadius: BorderRadius.all(Radius.circular(5))),
+          margin: EdgeInsets.only(top: 16),
+          child: Column(children: <Widget>[
+            SingleChildScrollView(
+              child: SafeArea(
+                  child: Column(
+                children: <Widget>[
+                  MaterialButton(
+                      onPressed: () {
+                        _backScreen();
+                      },
+                      textColor: white,
+                      color: mstroyBlue,
+                      child: Container(
+                          padding: EdgeInsets.only(
+                              left: 45, top: 4, right: 45, bottom: 4),
+                          child: Text(
+                            "Выйти из аккаунта",
+                            style: TextStyle(fontWeight: FontWeight.w400),
+                          ))),
+                  Text("Имя пользователя: "),
+                  Text(userName),
+                  Text("Email"),
+                  Text(userEmail),
+                  Text("Роль:"),
+                  loadUserInfo(),
+                ],
+              )),
+            ),
+          ])),
+      Container(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(color: newBackgroundWhite),
+          child: Text("Hello World"))
+    ];
+
+    return GraphQLProvider(
+        client: client,
+        child: Scaffold(
+          appBar: AppBar(
+            elevation: 0.0,
+            backgroundColor: newBackgroundWhite,
+            title: Text(
+              "MStroy",
+              style: TextStyle(
+                  color: newDarkBlue,
+                  fontSize: 10 * MediaQuery.of(context).devicePixelRatio),
+            ),
+            iconTheme: IconThemeData(color: newDarkBlue),
+            centerTitle: true,
+          ),
+          body: Center(
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+                decoration: BoxDecoration(color: newBackgroundWhite),
+                child: _widgetOptions.elementAt(_selectedIndex)),
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.format_list_numbered_rtl),
+                title: Text('Проекты'),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                title: Text('Главная'),
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.help),
+                title: Text('Справка'),
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            unselectedItemColor: Colors.grey.shade400,
+            backgroundColor: newBackgroundWhite,
+            elevation: 0.0,
+            selectedItemColor: darkBlue,
+            onTap: _onItemTapped,
+          ),
+        ));
+  }
+
+  Widget projectListWidget() {
+    return SingleChildScrollView(
+      child: SafeArea(
+          child: Column(
+        children: <Widget>[
+          loadProjects(),
+        ],
+      )),
+    );
+  }
+
+  Widget loadProjects() {
+    double screenHeight = MediaQuery.of(context).size.height;
+    try {
+      return Query(
+        options: QueryOptions(
+          documentNode: gql(GraphQLQueries().allProjectQuery()),
+          pollInterval: 20000,
+        ),
+        builder: (QueryResult result,
+            {VoidCallback refetch, FetchMore fetchMore}) {
+          if (result.hasException) {
+            return loadIndicate();
+          }
+
+          if (result.loading) {
+            return loadIndicate();
+          }
+
+          List allProjectsJson = result.data['allProjects'];
+
+          try {
+            return Container(
+                height: screenHeight - 100,
+                child: CustomScrollView(
+                  shrinkWrap: true,
+                  slivers: <Widget>[
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+/*
+                        print("${allProjectsJson[index]["shortName"]}");
+*/
+
+                        if ("${allProjectsJson[index]["shortName"]}" == null ||
+                            "${allProjectsJson[index]["shortName"]}" == "" ||
+                            "${allProjectsJson[index]["shortName"]}" ==
+                                "null") {
+                          return buttonRow(
+                              "${allProjectsJson[index]["name"]}",
+                              "${allProjectsJson[index]["name"]}",
+                              "$index",
+                              "${allProjectsJson[index]["rowId"]}",
+                              "${allProjectsJson[index]["id"]}");
+                        } else {
+                          return buttonRow(
+                              "${allProjectsJson[index]["name"]}",
+                              "${allProjectsJson[index]["shortName"]}",
+                              "$index",
+                              "${allProjectsJson[index]["rowId"]}",
+                              "${allProjectsJson[index]["id"]}");
+                        }
+                      }, childCount: allProjectsJson.length),
+                    )
+                  ],
+                ));
+          } catch (e) {
+            return loadIndicate();
+          }
+        },
+      );
+    } catch (e) {
+      return loadIndicate();
+    }
+  }
+
+  Widget loadIndicate() {
+    return Container(
+        child: Visibility(
+            maintainSize: true,
+            maintainAnimation: true,
+            maintainState: true,
+            visible: true,
+            child: Container(
+                margin: EdgeInsets.only(top: 50, bottom: 30),
+                child: CircularProgressIndicator())));
+  }
+
+  Widget notifyNum(String rowIdOfProject) {
+    try {
+      return Query(
+        options: QueryOptions(
+          documentNode:
+              gql(GraphQLQueries().allNotifyFromIdOfProject(rowIdOfProject)),
+          pollInterval: 1000,
+        ),
+        builder: (QueryResult result,
+            {VoidCallback refetch, FetchMore fetchMore}) {
+          if (result.hasException) {
+            print(result.exception.toString());
+            return Text(
+              "0",
+              style: TextStyle(fontSize: 20, color: white),
+              maxLines: 1,
+            );
+          }
+
+          if (result.loading) {
+            print("Loading");
+            return loadIndicator();
+          }
+
+          List allInspectionRequestsJson = result.data['allInspectionRequests'];
+          List allInspectionsJson = result.data['allInspections'];
+          List allIncidentsJson = result.data['allIncidents'];
+
+          try {
+            var notifyLength = allInspectionRequestsJson.length +
+                allInspectionsJson.length +
+                allIncidentsJson.length;
+            return Text(
+              "$notifyLength",
+              style: TextStyle(fontSize: 20, color: white),
+              maxLines: 1,
+            );
+          } catch (e) {
+            return Text(
+              "0",
+              style: TextStyle(fontSize: 20, color: white),
+              maxLines: 1,
+            );
+          }
+        },
+      );
+    } catch (e) {
+      return Text(
+        "0",
+        style: TextStyle(fontSize: 20, color: white),
+        maxLines: 1,
+      );
+    }
+  }
+
+  Widget loadIndicator() {
+    return Visibility(
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        visible: true,
+        child: Container(
+            width: 20,
+            height: 20,
+            margin: EdgeInsets.only(top: 5, bottom: 5),
+            child: CircularProgressIndicator(
+              valueColor: new AlwaysStoppedAnimation<Color>(white),
+            )));
+  }
+
+  _write(String text) async {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    final File file = File('${directory.path}/my_file.txt');
+    await file.writeAsString(text);
+  }
+
+  void _backScreen() {
+    var exitAuth = _write("");
+    print("$exitAuth");
+    addBoolToSF(true);
+    Navigator.of(context).pushReplacementNamed(authorizationRoute);
+  }
+
+  Widget buttonRow(String text, String shortName, String trailingText,
+      String rowIdOfProject, String idOfProject) {
+    var buttonHeight = 50.toDouble() * devicePR / 2 + 2;
+    var buttonMargin =
+        EdgeInsets.only(left: 12, top: 0, bottom: 8 * devicePR / 2);
+    var buttonWidth = 340.toDouble() / devicePR * 3;
+    var buttonBodrerRadius = BorderRadius.all(Radius.circular(10));
+    var listTileColor = newBackgroundWhite2;
+    var textColor = newDarkBlue;
+    var textSize = 14.toDouble() * devicePR / 2;
+    var trailingWidth = 36.toDouble() * devicePR / 2;
+    var trailingHeight = 23.toDouble() * devicePR / 2;
+    var trailingBorderRadius = BorderRadius.all(Radius.circular(50));
+    var trailingBackColor = trailingBackgroundColor;
+
+    return Row(
+      children: <Widget>[
+        Container(
+            height: buttonHeight,
+            margin: buttonMargin,
+            width: buttonWidth,
+            decoration: BoxDecoration(
+                borderRadius: buttonBodrerRadius, color: listTileColor),
+            child: Container(
+                child: Row(children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(left: 7),
+                width: (180 + 70) * devicePR / 2,
+                child: MaterialButton(
+                  onLongPress: () {},
+                  onPressed: () {
+                    print(rowIdOfProject);
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => PageOfProject(
+                              projectName: "$text",
+                              shortName: shortName,
+                              graphQLtoken: graphQLtoken.toString(),
+                              rowIdOfProject: rowIdOfProject,
+                              idOfProject: idOfProject,
+                            )));
+                  },
+                  child: Align(
+                    child: Text(
+                      shortName,
+                      maxLines: 1,
+                      style: TextStyle(
+                          color: textColor,
+                          fontSize: textSize,
+                          fontWeight: FontWeight.w600),
+                    ),
+                    alignment: Alignment.centerLeft,
+                  ),
+                ),
+              ),
+              Container(
+                  width: trailingWidth,
+                  height: trailingHeight,
+                  decoration: BoxDecoration(
+                    color: trailingBackColor,
+                    borderRadius: trailingBorderRadius,
+                  ),
+                  child: Center(
+                    child: notifyNum(rowIdOfProject),
+                  )),
+            ]))),
+      ],
+    );
+  }
+}
+
+bool checkAuthorizationIsNull() {
+  var text = _read();
+  try {
+    // ignore: unrelated_type_equality_checks
+    if (text != '' || text != null) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    print(e);
+    return false;
+  }
+}
+
+dynamic _read() async {
+  String text;
+  try {
+    final Directory directory = await getApplicationDocumentsDirectory();
+    final File file = File('${directory.path}/my_file.txt');
+    text = await file.readAsString();
+    var jsonText = jsonDecode(text);
+
+    graphQLtoken = jsonText["Authorization"].toString();
+  } catch (e) {
+    print("Couldn't read file");
+  }
+
+  return text;
+}
+
+final String projectsIcoName = 'images/projects_ico.svg';
+final String logoutIcoName = 'images/logout.svg';
+final String projectIcoName = 'images/projectIco.svg';
+final String questionsIcoName = 'images/question.svg';
+final String starIcoName = 'images/star.svg';
+final Widget projectsIco =
+    SvgPicture.asset(projectsIcoName, semanticsLabel: 'ico');
+final Widget projectPageIco =
+    SvgPicture.asset(projectIcoName, semanticsLabel: 'ico');
+final Widget logoutIco = SvgPicture.asset(logoutIcoName, semanticsLabel: 'ico');
+final Widget questionIco =
+    SvgPicture.asset(questionsIcoName, semanticsLabel: 'ico');
+final Widget starIco = SvgPicture.asset(starIcoName, semanticsLabel: 'ico');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var authorizationRoute = '/Authorization';
+var projectListRoute = '/RenameList';
+var pageOfProjectRoute = '/PageOfProject';
+var fixIncidentRoute = '/FixIncident';
+var allIncidentsPageStateRoute = '/AllIncidentsEditPage';
+var createInspectionRoute = '/CreateInspection';
+var inspectionEditPageRoute = '/InspectionsEditPage';
+var requestsEditPageRoute = '/RequestsEditPage';
+var workWithCameraRoute = '/WorkWithCamera';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//test api helmet
+/*const baseApiUrl = "https://helmetapi.ms11.ru";
+const authApiUrl = "https://helmetapi.ms11.ru/auth/login";
+
+const graphQLUrl = 'https://graphql.ms11.ru/';*/
+
+//base api mstroy
+const baseApiUrl = "https://api-v2.mstroy.tech/";
+const authApiUrl = "https://api-v2.mstroy.tech/auth/login";
+
+const graphQLUrl = 'https://graphql.mstroy.tech/';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'package:flutter/material.dart';
+import 'dart:core';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mstroy/construction_control/inspections/inspections/InspectionsEditPage.dart';
+import 'package:mstroy/mainclasses/constants/OftenAppBar.dart';
+import 'package:mstroy/construction_control/inspections/requests_of_inspections/RequestsEditPage.dart';
+import 'package:mstroy/mainclasses/constants/GraphQLQueries.dart';
+import 'package:mstroy/mainclasses/constants/NormalDate.dart';
+import 'package:mstroy/construction_control/ProjectList.dart';
+import 'package:mstroy/mainclasses/constants/MSColors.dart';
+import 'package:mstroy/mainclasses/constants/urls.dart';
+
+class CardFilterEntry {
+  const CardFilterEntry(this.name);
+
+  final String name;
+}
+
+final HttpLink httpLink = HttpLink(
+  uri: graphQLUrl,
+);
+
+final AuthLink authLink = AuthLink(
+  getToken: () async => graphQLtoken.toString(),
+);
+final Link link = authLink.concat(httpLink);
+ValueNotifier<GraphQLClient> client = ValueNotifier(
+  GraphQLClient(
+    cache: InMemoryCache(),
+    link: link,
+  ),
+);
+
+class CastInspectionFilter extends StatefulWidget {
+  final String projectName;
+  final String buttonName;
+  final String graphQLtoken;
+  final String rowIdOfProject;
+  final String idOfProject;
+  final int selectFilter;
+
+  CastInspectionFilter(
+      {this.projectName,
+      this.buttonName,
+      this.graphQLtoken,
+      this.rowIdOfProject,
+      this.idOfProject,
+      this.selectFilter});
+
+  @override
+  State createState() => CastInspectionFilterState(
+      projectName: projectName,
+      buttonName: buttonName,
+      graphQLtoken: graphQLtoken,
+      rowIdOfProject: rowIdOfProject,
+      idOfProject: idOfProject,
+      selectFilter: selectFilter);
+}
+
+class CastInspectionFilterState extends State<CastInspectionFilter> {
+  final String projectName;
+  final String buttonName;
+  final String graphQLtoken;
+  final String rowIdOfProject;
+  final String idOfProject;
+  final int selectFilter;
+
+  CastInspectionFilterState({
+    this.projectName,
+    this.buttonName,
+    this.graphQLtoken,
+    this.rowIdOfProject,
+    this.idOfProject,
+    this.selectFilter,
+  });
+
+  final List<CardFilterEntry> _cast = <CardFilterEntry>[
+    const CardFilterEntry('Все'),
+    const CardFilterEntry('Принятые'),
+    const CardFilterEntry('Непринятые'),
+    const CardFilterEntry('В работе'),
+    const CardFilterEntry('На проверке'),
+  ];
+
+  List<String> _filters = <String>[];
+  String queryString = "";
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _filters.add(_cast[selectFilter].name);
+      if (_cast[selectFilter].name == "Все") {
+        queryString = "";
+
+        queryString =
+            GraphQLQueries().inspectionRequestsFromProjectId(rowIdOfProject);
+      }
+    });
+  }
+
+  Iterable<Widget> get actorWidgets sync* {
+    for (final CardFilterEntry actor in _cast) {
+      yield Padding(
+        padding: const EdgeInsets.all(2.0),
+        child: FilterChip(
+          label: Text(
+            actor.name,
+            style: TextStyle(color: white),
+          ),
+          selectedColor: filterInspectionSelectedColor,
+          backgroundColor: filterInspectionUnSelectedColor,
+          showCheckmark: false,
+          selected: _filters.contains(actor.name),
+          onSelected: (bool value) {
+            setState(() {
+              if (value) {
+                if (actor.name == "Все") {
+                  queryString = "";
+
+                  queryString = GraphQLQueries()
+                      .inspectionRequestsFromProjectId(rowIdOfProject);
+                  _filters.clear();
+                  _filters.add(actor.name);
+                }
+                if (actor.name != "Все") {
+                  queryString = "";
+
+                  _filters.removeWhere((String name) {
+                    return name == "Все";
+                  });
+                  _filters.add(actor.name);
+                }
+              } else {
+                _filters.removeWhere((String name) {
+                  return name == actor.name;
+                });
+              }
+            });
+          },
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GraphQLProvider(
+        client: client,
+        child: Scaffold(
+            appBar: OftenAppBar().inspectionAppBar("Инспекции"),
+            body: Container(
+                color: backgroundWhite,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Container(
+                        width: MediaQuery.of(context).size.width,
+                        color: newButtonMstroyBlue,
+                        child: Wrap(
+                          alignment: WrapAlignment.start,
+                          children: actorWidgets.toList(),
+                        )),
+                    SingleChildScrollView(
+                      child: SafeArea(
+                          child: Column(
+                        children: <Widget>[loadInspectionsRequests()],
+                      )),
+                    ),
+                  ],
+                ))));
+  }
+
+  Widget loadInspectionsRequests() {
+    double screenHeight =
+        (MediaQuery.of(context).size.height - 136 - 7) * devicePR - 1325;
+    try {
+      return Query(
+        options: QueryOptions(
+          documentNode: gql(queryString),
+          pollInterval: 10000,
+        ),
+        builder: (QueryResult result,
+            {VoidCallback refetch, FetchMore fetchMore}) {
+          if (queryString == "") {
+            return Text("Запрос еще не настроен");
+          }
+          if (result.hasException) {
+            return loadingIndicator();
+          }
+
+          if (result.loading) {
+            return loadingIndicator();
+          }
+
+          List inspections = result.data['allInspectionRequests'];
+
+          try {
+            print(inspections.length);
+            return Container(
+                height: screenHeight,
+                child: CustomScrollView(
+                  shrinkWrap: true,
+                  slivers: <Widget>[
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+                        try {
+                          var normalDate = NormalDate()
+                              .reDate("${inspections[index]["planDate"]}");
+                          return Center(
+                              child: card(
+                            "${inspections[index]["name"]}",
+                            "$index",
+                            "${inspections[index]["rowId"]}",
+                            normalDate,
+                            "",
+                            "",
+                            "",
+                          ));
+                        } catch (e) {
+                          var normalDate = "--.--.----";
+                          return Center(
+                              child: card(
+                            "${inspections[index]["name"]}",
+                            "$index",
+                            "${inspections[index]["rowId"]}",
+                            normalDate,
+                            "",
+                            "",
+                            "",
+                          ));
+                        }
+                      }, childCount: inspections.length),
+                    )
+                  ],
+                ));
+          } catch (e) {
+            return loadingIndicator();
+          }
+        },
+      );
+    } catch (e) {
+      print(e);
+      return loadingIndicator();
+    }
+  }
+
+  Widget loadingIndicator() {
+    return Visibility(
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        visible: true,
+        child: Container(
+            margin: EdgeInsets.only(top: 50, bottom: 30),
+            child: CircularProgressIndicator()));
+  }
+
+/*
+  Widget card(String text, String index, String id, String datetime) =>
+      Container(
+          constraints: BoxConstraints(minHeight: 100),
+          child: Card(
+              child: MaterialButton(
+                  onPressed: () {
+                    _startEditPage(RequestsEditPage(
+                      graphQLtoken: graphQLtoken,
+                      index: "$index",
+                      projectName: projectName,
+                      rowId: id,
+                      comment: text,
+                    ));
+                  },
+                  child: Column(children: <Widget>[
+                    ListTile(
+                      leading: Text(id),
+                      title: Text(
+                        text,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      trailing: Text(datetime, style: TextStyle(fontSize: 12)),
+                    )
+                  ]))));
+*/
+
+  Widget card(String comment, String index, String rowId, String datetime,
+          String incidentType, incidentName, recommendation) =>
+      Container(
+          margin: EdgeInsets.only(
+              top: 2.5 * devicePR / 2, bottom: 2.5 * devicePR / 2),
+          decoration: BoxDecoration(
+            color: white,
+            borderRadius: BorderRadius.all(Radius.circular(10 * devicePR / 2)),
+          ),
+          width: 339 / devicePR * 3,
+          height: 55 * devicePR / 2,
+          alignment: Alignment.centerLeft,
+          child: MaterialButton(
+              padding: EdgeInsets.all(0),
+              onPressed: () {
+                _startEditPage(InspectionsEditPage(
+                  graphQLtoken: graphQLtoken,
+                  index: "$index",
+                  projectName: projectName,
+                ));
+              },
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10 * devicePR / 2),
+                          bottomLeft: Radius.circular(10 * devicePR / 2)),
+                      color: newLeadingRed,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    width: 13 * devicePR / 3,
+                  ),
+                  Container(
+                      margin: EdgeInsets.only(
+                          left: 11 * devicePR / 2,
+                          top: 7 * devicePR / 2,
+                          right: 14 * devicePR / 2),
+                      child: Text(
+                        "777",
+                        style: TextStyle(
+                            color: newDarkBlue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14 * devicePR / 2),
+                      )),
+                  Container(
+                    width: 265 * devicePR / 2.5,
+                    margin: EdgeInsets.only(top: 7 * devicePR / 2),
+                    child: Text(
+                      incidentName,
+                      style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          color: newDarkBlue,
+                          fontSize: 14 * devicePR / 2),
+                      maxLines: 5,
+                    ),
+                  )
+                ],
+              )));
+
+  void _startEditPage(StatefulWidget statefulWidget) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => statefulWidget));
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'dart:core';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:mstroy/mainclasses/constants/OftenAppBar.dart';
+import 'package:mstroy/mainclasses/WorkWithCamera.dart';
+
+class RequestsEditPage extends StatefulWidget {
+  final String projectName;
+  final String index;
+  final String rowId;
+  final String graphQLtoken;
+  final String comment;
+
+  RequestsEditPage(
+      {this.projectName,
+      this.index,
+      this.graphQLtoken,
+      this.rowId,
+      this.comment});
+
+  @override
+  State<StatefulWidget> createState() => _RequestsEditPageState(
+      projectName: projectName,
+      incidentIndex: index,
+      graphQLtoken: graphQLtoken,
+      rowId: rowId,
+      comment: comment);
+}
+
+class _RequestsEditPageState extends State<RequestsEditPage> {
+  final String projectName;
+  final String incidentIndex;
+  final String rowId;
+  final String graphQLtoken;
+  final String comment;
+
+  _RequestsEditPageState(
+      {this.projectName,
+      this.incidentIndex,
+      this.graphQLtoken,
+      this.rowId,
+      this.comment});
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: OftenAppBar().inspectionAppBar("Инспекция"),
+        body: SingleChildScrollView(
+          child: SafeArea(
+              child: Column(
+            children: <Widget>[
+              Container(
+                  height: MediaQuery.of(context).size.height - 100,
+                  child: CustomScrollView(
+                    shrinkWrap: true,
+                    slivers: <Widget>[
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                            (BuildContext context, int index) {
+                          return SingleChildScrollView(
+                              child: Column(children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("№ $rowId"),
+                                  Text("Проект"),
+                                  Text(projectName),
+                                  Text("Плановая дата"),
+                                  Text("Конструктив"),
+                                  Text("Вид работ"),
+                                  Text("Номер чертежа"),
+                                  Text("Руководящие документы"),
+                                  Text("Инициатор"),
+                                  Text("Комментарий"),
+                                  Text("$comment")
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Фотографии"),
+                                  Container(
+                                      margin: EdgeInsets.all(10),
+                                      child: WorkWithCamera()),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              height: 1000,
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Подписи"),
+                                  Text("Заявка создана"),
+                                  Text("Виза ОКС"),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Создать инспекцию"),
+                                ],
+                              ),
+                            ),
+                          ]));
+                        }, childCount: 1),
+                      )
+                    ],
+                  ))
+            ],
+          )),
+        ));
+  }
+
+  Widget card(String text, String trailingText) => Container(
+      constraints: BoxConstraints(minHeight: 100),
+      child: Card(
+          child: MaterialButton(
+              onPressed: () {},
+              child: Column(children: <Widget>[
+                ListTile(
+                  title: Text(
+                    text,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                )
+              ]))));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'dart:core';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:mstroy/mainclasses/constants/OftenAppBar.dart';
+import 'package:mstroy/mainclasses/WorkWithCamera.dart';
+import 'package:mstroy/mainclasses/constants/NormalDate.dart';
+
+class CreateInspection extends StatefulWidget {
+  final String projectName;
+  final String buttonName;
+  final String graphQLtoken;
+
+  CreateInspection({this.projectName, this.buttonName, this.graphQLtoken});
+
+  @override
+  State<StatefulWidget> createState() =>
+      _CreateInspectionState(projectName: projectName, buttonName: buttonName);
+}
+
+class _CreateInspectionState extends State<CreateInspection> {
+  final String projectName;
+  final String buttonName;
+  final String graphQLtoken;
+
+  _CreateInspectionState(
+      {this.projectName, this.buttonName, this.graphQLtoken});
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: OftenAppBar().mainAppBar("Создать заявку"),
+        body: SingleChildScrollView(
+          child: SafeArea(
+              child: Column(
+            children: <Widget>[
+              Container(
+                  height: MediaQuery.of(context).size.height - 100,
+                  child: CustomScrollView(
+                    shrinkWrap: true,
+                    slivers: <Widget>[
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                            (BuildContext context, int index) {
+                          return SingleChildScrollView(
+                              child: Column(children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text(" № $index"),
+                                  Text("Заявка на инспекцию"),
+                                  Text(
+                                    "Дата",
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                  Text(
+                                    "${NormalDate().formatDateInCreateView(DateTime.now())}",
+                                    style: TextStyle(fontSize: 20),
+                                  ),
+                                  Text("Проект"),
+                                  Text(projectName),
+                                  Text("Тип инспекции"),
+                                  Text("Конструктив"),
+                                  Text("Конструктив (описание)"),
+                                  Text("Вид работ"),
+                                  Text("Ответственный"),
+                                  Text("ФИО (роль)"),
+                                  Text("Температура"),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Лист оценки"),
+                                  Text("-Заполнить лист оценки-"),
+                                  Text("количество несоответствий"),
+                                  Container(
+                                      margin: EdgeInsets.all(10),
+                                      child: WorkWithCamera()),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              height: 1000,
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Нарушения"),
+                                  Text("Зафиксировать нарушение"),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Заключение"),
+                                  Text("-не принята- -принята-"),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("-Отменить- -Сохранить-"),
+                                ],
+                              ),
+                            ),
+                          ]));
+                        }, childCount: 1),
+                      )
+                    ],
+                  ))
+            ],
+          )),
+        ));
+  }
+
+  Widget card(String text, String trailingText) => Container(
+      height: 100,
+      child: Card(
+          child: MaterialButton(
+              onPressed: () {},
+              child: ListTile(
+                title: Text(
+                  text,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ))));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'dart:core';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:mstroy/mainclasses/constants/MSColors.dart';
+import 'package:mstroy/mainclasses/constants/OftenAppBar.dart';
+
+class InspectionsEditPage extends StatefulWidget {
+  final String projectName;
+  final String index;
+  final String graphQLtoken;
+
+  InspectionsEditPage({this.projectName, this.index, this.graphQLtoken});
+
+  @override
+  State<StatefulWidget> createState() => _InspectionsEditPageState(
+      projectName: projectName,
+      incidentIndex: index,
+      graphQLtoken: graphQLtoken);
+}
+
+class _InspectionsEditPageState extends State<InspectionsEditPage> {
+  final String projectName;
+  final String incidentIndex;
+  final String graphQLtoken;
+
+  bool _resultEstimationFirst = false;
+  bool _resultEstimationSecond = false;
+
+  bool _discrepanciesCountFirst = false;
+  bool _discrepanciesCountSecond = false;
+
+  bool _checklistsFirst = false;
+  bool _checklistsSecond = false;
+
+  bool _passportsFirst = false;
+  bool _passportsSecond = false;
+
+  bool _executiveSchemeFirst = false;
+  bool _executiveSchemeSecond = false;
+
+  bool _requirementsForPDandRDFirst = false;
+  bool _requirementsForPDandRDSecond = false;
+
+  bool _regulatoryDocumentationFirst = false;
+  bool _regulatoryDocumentationSecond = false;
+
+  double devicePR = 0.0;
+
+  _InspectionsEditPageState(
+      {this.projectName, this.incidentIndex, this.graphQLtoken});
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    setState(() {
+      devicePR = MediaQuery.of(context).devicePixelRatio;
+    });
+    var trailingTextSize = 14.toDouble() * devicePR;
+    trailingTextSize = 14.toDouble() * devicePR / 2;
+    var fixButtonMargin = EdgeInsets.only(bottom: 10 * devicePR / 2);
+    var buttonHeight = 35.toDouble() * devicePR / 2 + 2;
+    var buttonPadding =
+        EdgeInsets.only(top: 4 * devicePR / 2, bottom: 4 * devicePR / 2);
+    var fixButtonSize = 14.toDouble() * devicePR / 2.1;
+
+    return Scaffold(
+        appBar: OftenAppBar().inspectionAppBar("Инспекции"),
+        body: SingleChildScrollView(
+          child: SafeArea(
+              child: Column(
+            children: <Widget>[
+              Container(
+                  color: inspectionEditPageBackground,
+                  height: MediaQuery.of(context).size.height - 100,
+                  child: CustomScrollView(
+                    shrinkWrap: true,
+                    slivers: <Widget>[
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                            (BuildContext context, int index) {
+                          return SingleChildScrollView(
+                              child: Column(children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("№ $incidentIndex"),
+                                  Text("Проект"),
+                                  Text(projectName),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: MediaQuery.of(context).size.width,
+                              margin: EdgeInsets.all(10 * devicePR / 2),
+                              padding: EdgeInsets.all(11 * devicePR / 2),
+                              decoration: BoxDecoration(
+                                  color: inspectionEditPageRequestsGreen,
+                                  borderRadius: BorderRadius.all(
+                                      Radius.circular(10 * devicePR / 2))),
+                              child: Column(
+                                children: <Widget>[Text("Заявка")],
+                              ),
+                            ),
+                            Container(
+                              width: MediaQuery.of(context).size.width,
+                              margin: EdgeInsets.all(10 * devicePR / 2),
+                              padding: EdgeInsets.all(11 * devicePR / 2),
+                              decoration: BoxDecoration(
+                                  color: white,
+                                  borderRadius: BorderRadius.all(
+                                      Radius.circular(10 * devicePR / 2))),
+                              child: Column(
+                                children: <Widget>[
+                                  Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Text(
+                                        "РЕЗУЛЬТАТЫ ИНСПЕКЦИИ",
+                                        style: TextStyle(
+                                          color: newDarkBlue,
+                                          fontSize: fixButtonSize,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.left,
+                                      )),
+                                  Container(
+                                    margin: EdgeInsets.only(top: 11* devicePR / 2),
+                                      child: Row(
+                                    children: <Widget>[
+                                      Text("Выполнено"),
+                                      Text("Корректно"),
+                                    ],
+                                  )),
+                                  Row(
+                                    children: <Widget>[
+                                      _switchesNamesColumn(),
+                                      _firstSwitches(),
+                                      _secondSwitches()
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: MediaQuery.of(context).size.width,
+                              margin: EdgeInsets.all(10 * devicePR / 2),
+                              padding: EdgeInsets.all(11 * devicePR / 2),
+                              decoration: BoxDecoration(
+                                  color: white,
+                                  borderRadius: BorderRadius.all(
+                                      Radius.circular(10 * devicePR / 2))),
+                              child: Column(
+                                children: <Widget>[Text("Photo")],
+                              ),
+                            ),
+                            Container(
+                              width: MediaQuery.of(context).size.width,
+                              margin: EdgeInsets.all(10 * devicePR / 2),
+                              padding: EdgeInsets.all(11 * devicePR / 2),
+                              decoration: BoxDecoration(
+                                  color: white,
+                                  borderRadius: BorderRadius.all(
+                                      Radius.circular(10 * devicePR / 2))),
+                              child: Column(
+                                children: <Widget>[
+                                  Container(
+                                      height: buttonHeight,
+                                      margin: fixButtonMargin,
+                                      width: MediaQuery.of(context).size.width,
+                                      child: MaterialButton(
+                                          elevation: 0.0,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(
+                                                    5 * devicePR / 2)),
+                                          ),
+                                          onPressed: () {},
+                                          textColor: white,
+                                          color: inspectionEditPageButtonYellow,
+                                          child: Container(
+                                            padding: buttonPadding,
+                                            child: Text(
+                                              "Принять в работу",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: fixButtonSize),
+                                            ),
+                                          ))),
+                                  Container(
+                                      height: buttonHeight,
+                                      margin: fixButtonMargin,
+                                      width: MediaQuery.of(context).size.width,
+                                      child: MaterialButton(
+                                          elevation: 0.0,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(7)),
+                                          ),
+                                          onPressed: () {},
+                                          textColor: white,
+                                          color: newButtonMstroyBlue,
+                                          child: Container(
+                                            padding: buttonPadding,
+                                            child: Text(
+                                              "Готово к проверке",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: fixButtonSize),
+                                            ),
+                                          ))),
+                                  Container(
+                                      height: buttonHeight,
+                                      margin: fixButtonMargin,
+                                      width: MediaQuery.of(context).size.width,
+                                      child: MaterialButton(
+                                          elevation: 0.0,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(7)),
+                                          ),
+                                          onPressed: () {},
+                                          textColor: white,
+                                          color: inspectionEditPageButtonGreen,
+                                          child: Container(
+                                            padding: buttonPadding,
+                                            child: Text(
+                                              "Подтвердить устранение",
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: fixButtonSize),
+                                            ),
+                                          ))),
+                                ],
+                              ),
+                            ),
+                          ]));
+                        }, childCount: 1),
+                      )
+                    ],
+                  ))
+            ],
+          )),
+        ));
+  }
+
+  Widget _switchesNamesColumn() => Container(
+      padding: EdgeInsets.only(top: 15),
+      constraints: BoxConstraints(maxWidth: 200),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            padding: EdgeInsets.only(left: 10, top: 10, bottom: 15),
+            child: Text("Результаты оценки"),
+          ),
+          Container(
+            padding: EdgeInsets.only(left: 10, top: 10, bottom: 15),
+            child: Text("Количество несоответствий"),
+          ),
+          Container(
+            padding: EdgeInsets.only(left: 10, top: 10, bottom: 15),
+            child: Text("Чек-листы"),
+          ),
+          Container(
+            padding: EdgeInsets.only(left: 10, top: 10, bottom: 15),
+            child: Text(
+                "Паспорта, сертификаты соответствия, таможенные декларации"),
+          ),
+          Container(
+            padding: EdgeInsets.only(left: 10, top: 10, bottom: 15),
+            child: Text("Исполнительные схемы"),
+          ),
+          Container(
+            padding: EdgeInsets.only(left: 10, top: 10, bottom: 15),
+            child: Text("Требования ПД и РД"),
+          ),
+          Container(
+            padding: EdgeInsets.only(left: 10, top: 10, bottom: 15),
+            child: Text("Требования нормативной документации"),
+          ),
+        ],
+      ));
+
+  Widget _firstSwitches() => Column(
+        children: <Widget>[
+          Switch(
+            onChanged: (val) => setState(() => _resultEstimationFirst = val),
+            value: _resultEstimationFirst,
+          ),
+          Switch(
+            onChanged: (val) => setState(() => _discrepanciesCountFirst = val),
+            value: _discrepanciesCountFirst,
+          ),
+          Switch(
+            onChanged: (val) => setState(() => _checklistsFirst = val),
+            value: _checklistsFirst,
+          ),
+          Switch(
+            onChanged: (val) => setState(() => _passportsFirst = val),
+            value: _passportsFirst,
+          ),
+          Switch(
+            onChanged: (val) => setState(() => _executiveSchemeFirst = val),
+            value: _executiveSchemeFirst,
+          ),
+          Switch(
+            onChanged: (val) =>
+                setState(() => _requirementsForPDandRDFirst = val),
+            value: _requirementsForPDandRDFirst,
+          ),
+          Switch(
+            onChanged: (val) =>
+                setState(() => _regulatoryDocumentationFirst = val),
+            value: _regulatoryDocumentationFirst,
+          ),
+        ],
+      );
+
+  Widget _secondSwitches() => Column(
+        children: <Widget>[
+          Switch(
+            value: _resultEstimationSecond,
+            onChanged: (bool newValue) {
+              setState(() {
+                _resultEstimationSecond = newValue;
+              });
+            },
+          ),
+          Switch(
+            value: _discrepanciesCountSecond,
+            onChanged: (bool newValue) {
+              setState(() {
+                _discrepanciesCountSecond = newValue;
+              });
+            },
+          ),
+          Switch(
+            value: _checklistsSecond,
+            onChanged: (bool newValue) {
+              setState(() {
+                _checklistsSecond = newValue;
+              });
+            },
+          ),
+          Switch(
+            value: _passportsSecond,
+            onChanged: (bool newValue) {
+              setState(() {
+                _passportsSecond = newValue;
+              });
+            },
+          ),
+          Switch(
+            value: _executiveSchemeSecond,
+            onChanged: (bool newValue) {
+              setState(() {
+                _executiveSchemeSecond = newValue;
+              });
+            },
+          ),
+          Switch(
+            value: _requirementsForPDandRDSecond,
+            onChanged: (bool newValue) {
+              setState(() {
+                _requirementsForPDandRDSecond = newValue;
+              });
+            },
+          ),
+          Switch(
+            value: _regulatoryDocumentationSecond,
+            onChanged: (bool newValue) {
+              setState(() {
+                _regulatoryDocumentationSecond = newValue;
+              });
+            },
+          ),
+        ],
+      );
+
+  Widget card(String text, String trailingText) => Container(
+      constraints: BoxConstraints(minHeight: 100),
+      child: Card(
+          child: MaterialButton(
+              onPressed: () {},
+              child: Column(children: <Widget>[
+                ListTile(
+                  title: Text(
+                    text,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                )
+              ]))));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'dart:core';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:mstroy/mainclasses/constants/OftenAppBar.dart';
+
+class AllIncidentsEditPage extends StatefulWidget {
+  final String projectName;
+  final String index;
+  final String graphQLtoken;
+  final String incidentType;
+  final String incidentName;
+  final String comment;
+  final String recommendation;
+
+  AllIncidentsEditPage(
+      {this.projectName,
+      this.index,
+      this.graphQLtoken,
+      this.incidentType,
+      this.incidentName,
+      this.comment,
+      this.recommendation});
+
+  @override
+  State<StatefulWidget> createState() => _AllIncidentsEditPageState(
+      projectName: projectName,
+      incidentIndex: index,
+      graphQLtoken: graphQLtoken,
+      incidentType: incidentType,
+      incidentName: incidentName,
+      comment: comment,
+      recommendation: recommendation);
+}
+
+class _AllIncidentsEditPageState extends State<AllIncidentsEditPage> {
+  final String projectName;
+  final String incidentIndex;
+  final String graphQLtoken;
+  final String incidentType;
+  final String incidentName;
+  final String comment;
+  final String recommendation;
+
+  _AllIncidentsEditPageState(
+      {this.projectName,
+      this.incidentIndex,
+      this.graphQLtoken,
+      this.incidentType,
+      this.incidentName,
+      this.comment,
+      this.recommendation});
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: OftenAppBar().mainAppBar("Нарушения"),
+        body: SingleChildScrollView(
+          child: SafeArea(
+              child: Column(
+            children: <Widget>[
+              Container(
+                  height: MediaQuery.of(context).size.height - 100,
+                  child: CustomScrollView(
+                    shrinkWrap: true,
+                    slivers: <Widget>[
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                            (BuildContext context, int index) {
+                          return SingleChildScrollView(
+                              child: Column(children: <Widget>[
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("$incidentType № $incidentIndex"),
+                                  Text("Проект : $projectName"),
+                                  Text("Нарушение : $incidentName"),
+                                  Text("Описание : $comment"),
+                                  Text("Конструктив"),
+                                  Text("Конструктив (описание)"),
+                                  Text("Вид работ"),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Решение"),
+                                  Text("Срок устранения"),
+                                  Text("Рекомендации: $recommendation"),
+                                  Text("Подписано СК"),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              height: 1000,
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Устранение нарушения"),
+                                  Text("Принято в работу"),
+                                  Text("Готово к проверке"),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blueAccent)),
+                              child: Column(
+                                children: <Widget>[
+                                  Text("Подтверждение нарушения"),
+                                  Text(
+                                    "Подтвердить нарушение",
+                                    style: TextStyle(color: Colors.green),
+                                  ),
+                                  Text("Готово к проверке"),
+                                ],
+                              ),
+                            ),
+                          ]));
+                        }, childCount: 1),
+                      )
+                    ],
+                  ))
+            ],
+          )),
+        ));
+  }
+
+  Widget card(String text, String trailingText) => Container(
+      constraints: BoxConstraints(minHeight: 100),
+      child: Card(
+          child: MaterialButton(
+              onPressed: () {},
+              child: Column(children: <Widget>[
+                ListTile(
+                  title: Text(
+                    text,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                )
+              ]))));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'package:flutter/material.dart';
+import 'dart:core';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mstroy/mainclasses/constants/OftenAppBar.dart';
+import 'package:mstroy/mainclasses/constants/GraphQLQueries.dart';
+import 'package:mstroy/mainclasses/constants/NormalDate.dart';
+import 'package:mstroy/construction_control/ProjectList.dart';
+import 'package:mstroy/construction_control/incidents/AllIncidentsEditPage.dart';
+import 'package:mstroy/mainclasses/constants/MSColors.dart';
+import 'package:mstroy/mainclasses/constants/urls.dart';
+
+class CardFilterEntry {
+  const CardFilterEntry(this.name);
+
+  final String name;
+}
+
+final HttpLink httpLink = HttpLink(
+  uri: graphQLUrl,
+);
+double devicePR = 0.0;
+
+final AuthLink authLink = AuthLink(
+  getToken: () async => graphQLtoken.toString(),
+);
+final Link link = authLink.concat(httpLink);
+ValueNotifier<GraphQLClient> client = ValueNotifier(
+  GraphQLClient(
+    cache: InMemoryCache(),
+    link: link,
+  ),
+);
+
+class CastIncidentFilter extends StatefulWidget {
+  final String projectName;
+  final String buttonName;
+  final String graphQLtoken;
+  final String rowIdOfProject;
+  final String idOfProject;
+  final int selectFilter;
+
+  CastIncidentFilter(
+      {this.projectName,
+      this.buttonName,
+      this.graphQLtoken,
+      this.rowIdOfProject,
+      this.idOfProject,
+      this.selectFilter});
+
+  @override
+  State createState() => CastIncidentFilterState(
+      projectName: projectName,
+      buttonName: buttonName,
+      graphQLtoken: graphQLtoken,
+      rowIdOfProject: rowIdOfProject,
+      idOfProject: idOfProject,
+      selectFilter: selectFilter);
+}
+
+class CastIncidentFilterState extends State<CastIncidentFilter> {
+  final String projectName;
+  final String buttonName;
+  final String graphQLtoken;
+  final String rowIdOfProject;
+  final String idOfProject;
+  final int selectFilter;
+
+  CastIncidentFilterState({
+    this.projectName,
+    this.buttonName,
+    this.graphQLtoken,
+    this.rowIdOfProject,
+    this.idOfProject,
+    this.selectFilter,
+  });
+
+  final List<CardFilterEntry> _cast = <CardFilterEntry>[
+    const CardFilterEntry('Все'),
+    const CardFilterEntry('Устранённые'),
+    const CardFilterEntry('Неустранённые'),
+    const CardFilterEntry('В работе'),
+    const CardFilterEntry('На проверке'),
+    const CardFilterEntry('Просроченные'),
+    const CardFilterEntry('Замечания'),
+    const CardFilterEntry('Предписания'),
+    const CardFilterEntry('Предписания о приостановке работ'),
+  ];
+
+  List<String> _filters = <String>[];
+  String queryString = "";
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _filters.add(_cast[selectFilter].name);
+      if (_cast[selectFilter].name == "Все") {
+        queryString =
+            GraphQLQueries().incidentListFromProjectId(rowIdOfProject);
+      }
+    });
+  }
+
+  var redOpacity = const Color(0x591890FF);
+
+  var textColor = newDarkBlue;
+  var trailingBackColor = trailingBackgroundColor;
+  var createButtonColor = newMstroyBlue;
+  var listTileColor = newBackgroundWhite2;
+  var trailingBorderRadius = BorderRadius.all(Radius.circular(50));
+  var leadingBorderRadius = BorderRadius.only(
+      bottomLeft: Radius.circular(4), topLeft: Radius.circular(4));
+  var buttonBodrerRadius = BorderRadius.only(
+      bottomRight: Radius.circular(4), topRight: Radius.circular(4));
+
+  var buttonFontWeight = FontWeight.w200;
+  var buttonFontWeight2 = FontWeight.w300;
+
+  Iterable<Widget> get actorWidgets sync* {
+    for (final CardFilterEntry actor in _cast) {
+      yield Padding(
+        padding: const EdgeInsets.all(2.0),
+        child: FilterChip(
+          selectedColor: filterIncidentSelectedColor,
+          disabledColor: filterIncidentUnSelectedColor,
+          showCheckmark: false,
+          backgroundColor: filterIncidentUnSelectedColor,
+          label: Text(
+            actor.name,
+            style: TextStyle(color: white),
+          ),
+          selected: _filters.contains(actor.name),
+          onSelected: (bool value) {
+            setState(() {
+              if (value) {
+                if (actor.name == "Все") {
+                  queryString = "";
+
+                  queryString = GraphQLQueries()
+                      .incidentListFromProjectId(rowIdOfProject);
+                  _filters.clear();
+                  _filters.add(actor.name);
+                }
+                if (actor.name != "Все") {
+                  queryString = "";
+
+                  _filters.removeWhere((String name) {
+                    return name == "Все";
+                  });
+                  _filters.add(actor.name);
+                }
+              } else {
+                _filters.removeWhere((String name) {
+                  return name == actor.name;
+                });
+              }
+            });
+          },
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    devicePR = MediaQuery.of(context).devicePixelRatio;
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
+    var textSize = 14.toDouble() * devicePR / 2;
+    var leadingWidth = 6.toDouble() * devicePR / 2;
+    var buttonFontSize = 40.toDouble() * devicePR / 2;
+    var contentPadding =
+        EdgeInsets.only(top: 0, left: 15, right: 10, bottom: 4 * devicePR / 2);
+    var fixButtonMargin = EdgeInsets.only(
+        left: 10, right: 10, top: 18, bottom: 12 * devicePR / 2);
+    var fixButtonSize = 14.toDouble() * devicePR / 2.1;
+    var trailingTextSize = 14.toDouble() * devicePR;
+    trailingTextSize = 14.toDouble() * devicePR / 2;
+
+    setState(() {
+      devicePR = MediaQuery.of(context).devicePixelRatio;
+      trailingTextSize = 14.toDouble() * devicePR / 2;
+    });
+
+    var leadingMargin = EdgeInsets.only(left: 12, bottom: 4 * devicePR / 2);
+    var buttonMargin = EdgeInsets.only(top: 0, bottom: 4 * devicePR / 2);
+    var buttonPadding =
+        EdgeInsets.only(top: 4 * devicePR / 2, bottom: 4 * devicePR / 2);
+
+    var buttonWidth = 318.toDouble() / devicePR * 3;
+    var buttonHeight = 35.toDouble() * devicePR / 2 ;
+    var trailingWidth = 36.toDouble() * devicePR / 2;
+    var trailingHeight = 23.toDouble() * devicePR / 2;
+    var leadingHeight = buttonHeight;
+
+    return GraphQLProvider(
+        client: client,
+        child: Scaffold(
+            appBar: OftenAppBar().incidentAppBar("Нарушения"),
+            body: Container(
+                color: backgroundWhite,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Container(
+                        width: MediaQuery.of(context).size.width,
+                        color: newLeadingRed,
+                        child: Wrap(
+                          alignment: WrapAlignment.start,
+                          children: actorWidgets.toList(),
+                        )),
+                    SingleChildScrollView(
+                      child: SafeArea(
+                          child: Column(
+                        children: <Widget>[loadInspectionsRequests()],
+                      )),
+                    ),
+                  ],
+                ))));
+  }
+
+  Widget loadInspectionsRequests() {
+    double screenHeight =
+        (MediaQuery.of(context).size.height - 136 - 7) * devicePR - 1325;
+    try {
+      return Query(
+        options: QueryOptions(
+          documentNode: gql(queryString),
+          pollInterval: 10000,
+        ),
+        builder: (QueryResult result,
+            {VoidCallback refetch, FetchMore fetchMore}) {
+          if (queryString == "") {
+            return Text("Запрос еще не настроен");
+          }
+          if (result.hasException) {
+            print(result.exception);
+            return Text("Что-то пошло не так");
+          }
+
+          if (result.loading) {
+            return Visibility(
+                maintainSize: true,
+                maintainAnimation: true,
+                maintainState: true,
+                visible: true,
+                child: Container(
+                    margin: EdgeInsets.only(top: 50, bottom: 30),
+                    child: CircularProgressIndicator()));
+          }
+
+          List incidents = result.data['allIncidents'];
+
+          try {
+            print(incidents.length);
+            return Container(
+                height: screenHeight,
+                margin: EdgeInsets.only(top: 2.5 * devicePR / 2, bottom: 2.5 * devicePR / 2),
+                child: CustomScrollView(
+                  shrinkWrap: true,
+                  slivers: <Widget>[
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+                        var incidentName = "s";
+
+                        try {
+                          var normalDate = NormalDate()
+                              .reDate("${incidents[index]["resolveUntil"]}");
+                          try {
+                            incidentName = "${incidents[index]["name"]}";
+                          } catch (e) {
+                            incidentName = "";
+                          }
+
+                          return Center(
+                              child: card(
+                                  "${incidents[index]["comment"]}",
+                                  "$index",
+                                  "${incidents[index]["rowId"]}",
+                                  normalDate,
+                                  "Type",
+                                  incidentName,
+                                  "${incidents[index]["recommendation"]}"));
+                        } catch (e) {
+                          var normalDate = "--.--.----";
+                          try {
+                            incidentName = "${incidents[index]["name"]}";
+                          } catch (e) {
+                            incidentName = "";
+                          }
+
+                          return Center(
+                              child: card(
+                                  "${incidents[index]["comment"]}",
+                                  "$index",
+                                  "${incidents[index]["rowId"]}",
+                                  normalDate,
+                                  "Type",
+                                  incidentName,
+                                  "${incidents[index]["recommendation"]}"));
+                        }
+                      }, childCount: incidents.length),
+                    )
+                  ],
+                ));
+          } catch (e) {
+            print(e);
+            return Text("Что-то пошло не так");
+          }
+        },
+      );
+    } catch (e) {
+      print(e);
+      return Text("Что-то пошло не так");
+    }
+  }
+
+  Widget card(String comment, String index, String rowId, String datetime,
+          String incidentType, incidentName, recommendation) =>
+      Container(
+          margin: EdgeInsets.only(top: 2.5 * devicePR / 2, bottom: 2.5 * devicePR / 2),
+          decoration: BoxDecoration(
+            color: white,
+            borderRadius: BorderRadius.all(Radius.circular(10 * devicePR / 2)),
+          ),
+          width: 339 / devicePR * 3,
+          height: 55 * devicePR / 2,
+          alignment: Alignment.centerLeft,
+          child: MaterialButton(
+              padding: EdgeInsets.all(0),
+              onPressed: () {
+                _startEditPage(AllIncidentsEditPage(
+                  graphQLtoken: graphQLtoken,
+                  index: "$index",
+                  projectName: projectName,
+                  incidentType: incidentType,
+                  incidentName: incidentName,
+                  comment: comment,
+                  recommendation: recommendation,
+                ));
+              },
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10 * devicePR / 2),
+                          bottomLeft: Radius.circular(10 * devicePR / 2)),
+                      color: newLeadingRed,
+                    ),
+                    alignment: Alignment.centerLeft,
+                    width: 13 * devicePR / 3,
+                  ),
+                  Container(
+                      margin: EdgeInsets.only(
+                          left: 11 * devicePR / 2,
+                          top: 7 * devicePR / 2,
+                          right: 14 * devicePR / 2),
+                      child: Text(
+                        "777",
+                        style: TextStyle(
+                            color: newDarkBlue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14 * devicePR / 2),
+                      )),
+                  Container(
+                    width: 265 * devicePR / 2.5,
+                    margin: EdgeInsets.only(top: 7 * devicePR / 2),
+                    child: Text(
+                      incidentName,
+                      style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          color: newDarkBlue,
+                          fontSize: 14 * devicePR / 2),
+                      maxLines: 5,
+                    ),
+                  )
+                ],
+              )));
+
+  void _startEditPage(StatefulWidget statefulWidget) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => statefulWidget));
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
