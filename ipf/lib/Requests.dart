@@ -8,7 +8,10 @@ Future<void> main() async {
 /*  getTimetable("ССА 18-11-2", weekdaysOpt[1], lessons);
   createLesson("ССА 18-11-2", weekdaysOpt[1], 'subgroup','teacher','lesson','numlesson','room');
   deleteLesson('');*/
-  createLesson("ССА 18-11-2", 'Понедельник', '1','Говоров В.О.','Танководство','666','777');
+  createLesson("АТ 17-09", 'Понедельник', '1', 'Говоров В.О.',
+      'Танководство', '12', '999');
+
+  allGroups();
 }
 
 Future<List> getTimetable(group, weekday, lessonsArr) async {
@@ -25,6 +28,14 @@ Future<List> getTimetable(group, weekday, lessonsArr) async {
     var numlesson = decoded[i]['numlesson'];
     var room = decoded[i]['room'];
     var weekday = decoded[i]['weekday'];
+    print(id.toString());
+    print(group.toString());
+    print(subgroup.toString());
+    print(teacher.toString());
+    print(lesson.toString());
+    print(numlesson.toString());
+    print(room.toString());
+    print(weekday.toString());
     lessonsArr.add(Lesson(
       id.toString(),
       group.toString(),
@@ -42,7 +53,7 @@ Future<List> getTimetable(group, weekday, lessonsArr) async {
 Future<String> createLesson(
     group, weekday, subgroup, teacher, lesson, numlesson, room) async {
   var createdLesson =
-  Lesson('', group, subgroup, teacher, lesson, numlesson, room, weekday);
+      Lesson('', group, subgroup, teacher, lesson, numlesson, room, weekday);
 
   var lessons = [];
 
@@ -97,7 +108,22 @@ class Lesson {
     this.weekday = weekday;
   }
 }
+Future<List<String>> allGroups() async {
 
+  List<String> groupsOpt = [];
+  var url = 'http://api.timetable-ipf.com/api/timetable/options';
+  var response = await http.get(url);
+  var decoded = jsonDecode(response.body);
+  var group = decoded['group'];
+  for (int i = 0; i < group.length; i++) {
+    groupsOpt.add(group[i].toString());
+    print(group[i]);
+  }
+print(jsonDecode(response.body)['group'][0].toString());
+  print(groupsOpt);
+
+  return groupsOpt;
+}
 
 Future<Options> allOptions() async {
   var weekdaysOpt = [
@@ -137,6 +163,7 @@ Future<Options> allOptions() async {
   var group = decoded['group'];
   for (int i = 0; i < group.length; i++) {
     groupsOpt.add(group[i]);
+    print(group[i]);
   }
 /*  var subgroup = decoded['subgroup'];
   for (int i = 0; i < subgroup.length; i++) {
@@ -145,6 +172,7 @@ Future<Options> allOptions() async {
   var teacher = decoded['teacher'];
   for (int i = 0; i < teacher.length; i++) {
     teachersOpt.add(teacher[i]);
+    print(teacher[i]);
   }
   var lesson = decoded['lesson'];
   for (int i = 0; i < lesson.length; i++) {
@@ -155,7 +183,8 @@ Future<Options> allOptions() async {
     roomsOpt.add(room[i]);
   }
 
-  var options = Options(url, response, decoded, groupsOpt, teachersOpt, lessonsOpt, roomsOpt, weekdaysOpt, numLessonsOpt, subGroupsOpt);
+  var options = Options(url, response, decoded, groupsOpt, teachersOpt,
+      lessonsOpt, roomsOpt, weekdaysOpt, numLessonsOpt, subGroupsOpt);
   return options;
 }
 

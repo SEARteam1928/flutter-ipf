@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
+List<String> groups = [''];
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
   final String title;
@@ -36,11 +36,12 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-var myGroup = 'ССА 18-11-2';
-
+var myGroup = 'АТ 17-09';
+var day = 'Понедельник';
 class _MyHomePageState extends State<MyHomePage> {
-  Future _calculation = Future.delayed(
-      Duration(seconds: 2), () => getTimetable(myGroup, 'Понедельник'));
+  Future _lessons = Future.delayed(
+      Duration(seconds: 2), () => getTimetable(myGroup, day));
+  Future _groups = Future.delayed(Duration(seconds: 2), () => allGroups());
   var lessons;
   var lessonsTexts = [];
 
@@ -56,53 +57,161 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   int _groupDropDownValue = 1;
-
-
+  int _dayDropDownValue = 1;
+  int _loadInt = 1;
+  var weekdaysOpt = [
+    '0',
+    'Понедельник',
+    'Вторник',
+    'Среда',
+    'Четверг',
+    'Пятница',
+    'Суббота',
+    'Воскресенье'
+  ];
 
   @override
   Widget build(BuildContext context) {
+    var screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
-        appBar: AppBar(
-          elevation: 0.0,
-          backgroundColor: mstroyBlue,
-          centerTitle: true,
-          title: Text(widget.title),
-        ),
-        backgroundColor: newBackgroundWhite,
-        body: SingleChildScrollView(
-          child: Container(
-              alignment: Alignment.center,
-              child: Center(
-                  child: Column(
-                children: [
-                  Container(
-                    child: Center(
-                      child: Column(
-                        children: [
-                          DropdownButton(
-                            value: _groupDropDownValue,
-                            items: [
-                              DropdownMenuItem(
-                                child: Text('ССА 18-11-1'),
-                                value: 1,
-                              ),
-                              DropdownMenuItem(
-                                child: Text('ССА 18-11-2'),
-                                value: 2,
+      backgroundColor: newBackgroundWhite,
+      appBar: AppBar(
+        elevation: 0.0,
+        backgroundColor: mstroyBlue,
+        centerTitle: true,
+        title: Text(widget.title),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+            color: newBackgroundWhite,
+            alignment: Alignment.center,
+            child: Center(
+                child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: FutureBuilder(
+                        future: _groups,
+                        builder:
+                            (BuildContext context, AsyncSnapshot snapshot) {
+                          List<Widget> children;
+                          if (snapshot.hasData) {
+                            children = <Widget>[
+                              DropdownButton(
+                                value: _groupDropDownValue,
+                                items: snapshot.data
+                                    as List<DropdownMenuItem<int>>,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _groupDropDownValue = value;
+                                    myGroup = groups[value];
+                                    _groups = Future.delayed(Duration(seconds: 2), () => allGroups());
+                                    _lessons = Future.delayed(
+                                        Duration(seconds: 2), () => getTimetable(myGroup, day));
+                                  });
+                                },
                               )
-                            ],
-                            onChanged: (value){
-                              setState(() {
-                                _groupDropDownValue = value;
-                              });
-                            },
-                          ),
-                        ],
+                            ];
+                          } else if (snapshot.hasError) {
+                            children = <Widget>[
+                              Icon(
+                                Icons.error_outline,
+                                color: Colors.red,
+                                size: 60,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 16),
+                                child: Container(
+                                  width: 200,
+                                  child: Text('Error: ${snapshot.error}'),
+                                ),
+                              )
+                            ];
+                          } else {
+                            children = <Widget>[
+                              DropdownButton(
+                                value: _loadInt,
+                                  items: [
+                                    DropdownMenuItem(
+                                      child: Text('Загрузка групп'),
+                                      value: 1,
+                                    )
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _loadInt = value;
+                                    });
+                                  },)
+                            ];
+                          }
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: children,
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ),
-                  FutureBuilder(
-                    future: _calculation,
+                    Container(
+                      child: Center(
+                        child: Column(
+                          children: [
+                            DropdownButton(
+                              value: _dayDropDownValue,
+                              items: [
+                                DropdownMenuItem(
+                                  child: Text(weekdaysOpt[1]),
+                                  value: 1,
+                                ),
+                                DropdownMenuItem(
+                                  child: Text(weekdaysOpt[2]),
+                                  value: 2,
+                                ),
+                                DropdownMenuItem(
+                                  child: Text(weekdaysOpt[3]),
+                                  value: 3,
+                                ),
+                                DropdownMenuItem(
+                                  child: Text(weekdaysOpt[4]),
+                                  value: 4,
+                                ),
+                                DropdownMenuItem(
+                                  child: Text(weekdaysOpt[5]),
+                                  value: 5,
+                                ),
+                                DropdownMenuItem(
+                                  child: Text(weekdaysOpt[6]),
+                                  value: 6,
+                                ),
+                                DropdownMenuItem(
+                                  child: Text(weekdaysOpt[7]),
+                                  value: 7,
+                                )
+                              ],
+                              onChanged: (value) {
+                                setState(() {
+                                  _dayDropDownValue = value;
+                                  day = weekdaysOpt[value];
+                                  _lessons = Future.delayed(
+                                      Duration(seconds: 2), () => getTimetable(myGroup, day));
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Center(
+                  child: FutureBuilder(
+                    future: _lessons,
                     builder: (BuildContext context, AsyncSnapshot snapshot) {
                       List<Widget> children;
                       if (snapshot.hasData) {
@@ -112,55 +221,111 @@ class _MyHomePageState extends State<MyHomePage> {
                               Expanded(
                                 child: SizedBox(
                                   height:
-                                      MediaQuery.of(context).size.height - 100,
+                                      MediaQuery.of(context).size.height - 120,
                                   child: ListView.builder(
                                     itemCount: snapshot.data.length,
                                     itemBuilder: (context, index) {
                                       var lesson = snapshot.data[index];
-                                      return Container(
-                                        width:
-                                            MediaQuery.of(context).size.width -
-                                                300,
-                                        margin: EdgeInsets.all(10),
-                                        // общий
-                                        child: Row(
-                                          // разделение на три колонки
-                                          children: [
-                                            Container(
-                                              child: Text(lesson.numlesson),
-                                              padding: EdgeInsets.all(5),
-                                            ),
-                                            // номер урока
-                                            Container(
-                                              //данные об уроке
-                                              child: Column(
-                                                children: [
-                                                  Container(
-                                                    child: Text(lesson.lesson),
-                                                  ), // название урока
-                                                  Container(
-                                                    child: Row(
-                                                      // строка препода и кабинета
-                                                      children: [
-                                                        Container(
+                                      return ConstrainedBox(
+                                        constraints:
+                                            BoxConstraints(minHeight: 80),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            color: white,
+                                          ),
+                                          margin: EdgeInsets.all(7),
+                                          // общий
+                                          child: Row(
+                                            // разделение на три колонки
+                                            children: [
+                                              ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                    minHeight: 80),
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      color:
+                                                          newButtonMstroyBlue),
+                                                  width: screenWidth / 13,
+                                                  child: Text(
+                                                    lesson.numlesson,
+                                                    style: TextStyle(
+                                                        color: white,
+                                                        fontFamily:
+                                                            'Montserrat-Bold'),
+                                                  ),
+                                                  padding: EdgeInsets.all(5),
+                                                ),
+                                              ), // номер урока
+                                              ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                    minHeight: 80),
+                                                child: Container(
+                                                  width: screenWidth * 0.75,
+                                                  //данные об уроке
+                                                  child: Column(
+                                                    children: [
+                                                      ConstrainedBox(
+                                                        constraints:
+                                                            BoxConstraints(
+                                                                minHeight: 50,
+                                                                minWidth:
+                                                                    screenWidth -
+                                                                        100),
+                                                        child: Container(
                                                           child: Text(
-                                                              lesson.teacher),
-                                                        ), //препод
-                                                        Container(
-                                                          child:
-                                                              Text(lesson.room),
-                                                        ) //кабинет
-                                                      ],
-                                                    ),
-                                                  )
-                                                ],
+                                                              lesson.lesson),
+                                                        ),
+                                                      ), // название урока
+                                                      Container(
+                                                        child: Row(
+                                                          // строка препода и кабинета
+                                                          children: [
+                                                            ConstrainedBox(
+                                                              constraints:
+                                                                  BoxConstraints(
+                                                                      minHeight:
+                                                                          30,
+                                                                      minWidth:
+                                                                          screenWidth -
+                                                                              200),
+                                                              child: Container(
+                                                                child: Text(lesson
+                                                                    .teacher),
+                                                              ),
+                                                            ),
+                                                            //препод
+                                                            ConstrainedBox(
+                                                                constraints: BoxConstraints(
+                                                                    minHeight:
+                                                                        30,
+                                                                    minWidth:
+                                                                        screenWidth -
+                                                                            330),
+                                                                child:
+                                                                    Container(
+                                                                  child: Text(
+                                                                      lesson
+                                                                          .room),
+                                                                ) //кабинет,
+                                                                ),
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                            Container(
-                                              child: Text('00:00'),
-                                            )
-                                            //время начала и конца урока
-                                          ],
+                                              ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                    minWidth: screenWidth - 380,
+                                                    minHeight: 80),
+                                                child: Container(
+                                                  child: Text('00:00'),
+                                                ),
+                                              )
+                                              //время начала и конца урока
+                                            ],
+                                          ),
                                         ),
                                       );
                                     },
@@ -204,19 +369,22 @@ class _MyHomePageState extends State<MyHomePage> {
                       );
                     },
                   ),
-                  /*                 */
-                ],
-              ))),
-        ),
-        floatingActionButton: FloatingActionButton(
-          elevation: 0.0,
-          onPressed: () {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => this.build(context)));
-          },
-          child: Icon(Icons.add),
-          backgroundColor: mstroyBlue,
-        ));
+                ),
+
+                /*                 */
+              ],
+            ))),
+      ),
+      /*floatingActionButton: FloatingActionButton(
+        elevation: 0.0,
+        onPressed: () {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => this.build(context)));
+        },
+        child: Icon(Icons.add),
+        backgroundColor: mstroyBlue,
+      ),*/
+    );
   }
 }
 
@@ -306,6 +474,24 @@ class Lesson {
     this.room = room;
     this.weekday = weekday;
   }
+}
+
+Future<List<DropdownMenuItem<int>>> allGroups() async {
+  groups = [''];
+  List<DropdownMenuItem<int>> groupsOpt = [];
+  var url = 'http://api.timetable-ipf.com/api/timetable/options';
+  var response = await http.get(url);
+  var decoded = jsonDecode(response.body);
+  var group = decoded['group'];
+  for (int i = 0; i < group.length; i++) {
+    groups.add(group[i].toString());
+    groupsOpt.add(DropdownMenuItem(
+      child: Text(group[i].toString()),
+      value: i + 1,
+    ));
+  }
+
+  return groupsOpt;
 }
 
 Future<Options> allOptions() async {
