@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'dart:async';
 import 'colors.dart';
@@ -11,8 +12,15 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  final routes = <String, WidgetBuilder>{
+    authorizationRoute: (BuildContext context) => Authorization(),
+  };
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown
+    ]);
     return MaterialApp(
       title: 'IPF',
       debugShowCheckedModeBanner: false,
@@ -24,10 +32,13 @@ class MyApp extends StatelessWidget {
       home: MyHomePage(
         title: 'IPF',
       ),
+      routes: routes,
     );
   }
 }
+
 List<String> groups = [''];
+
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
   final String title;
@@ -38,9 +49,10 @@ class MyHomePage extends StatefulWidget {
 
 var myGroup = 'АТ 17-09';
 var day = 'Понедельник';
+
 class _MyHomePageState extends State<MyHomePage> {
-  Future _lessons = Future.delayed(
-      Duration(seconds: 2), () => getTimetable(myGroup, day));
+  Future _lessons =
+      Future.delayed(Duration(seconds: 2), () => getTimetable(myGroup, day));
   Future _groups = Future.delayed(Duration(seconds: 2), () => allGroups());
   var lessons;
   var lessonsTexts = [];
@@ -81,6 +93,17 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: mstroyBlue,
         centerTitle: true,
         title: Text(widget.title),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: 20),
+            child: GestureDetector(
+              onTap: (){
+
+              },
+              child:Icon(Icons.assignment_ind,)
+            ),
+          )
+        ],
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -109,9 +132,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   setState(() {
                                     _groupDropDownValue = value;
                                     myGroup = groups[value];
-                                    _groups = Future.delayed(Duration(seconds: 2), () => allGroups());
+                                    _groups = Future.delayed(
+                                        Duration(seconds: 2),
+                                        () => allGroups());
                                     _lessons = Future.delayed(
-                                        Duration(seconds: 2), () => getTimetable(myGroup, day));
+                                        Duration(seconds: 2),
+                                        () => getTimetable(myGroup, day));
                                   });
                                 },
                               )
@@ -135,17 +161,18 @@ class _MyHomePageState extends State<MyHomePage> {
                             children = <Widget>[
                               DropdownButton(
                                 value: _loadInt,
-                                  items: [
-                                    DropdownMenuItem(
-                                      child: Text('Загрузка групп'),
-                                      value: 1,
-                                    )
-                                  ],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _loadInt = value;
-                                    });
-                                  },)
+                                items: [
+                                  DropdownMenuItem(
+                                    child: Text('Загрузка групп'),
+                                    value: 1,
+                                  )
+                                ],
+                                onChanged: (value) {
+                                  setState(() {
+                                    _loadInt = value;
+                                  });
+                                },
+                              )
                             ];
                           }
                           return Center(
@@ -199,7 +226,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   _dayDropDownValue = value;
                                   day = weekdaysOpt[value];
                                   _lessons = Future.delayed(
-                                      Duration(seconds: 2), () => getTimetable(myGroup, day));
+                                      Duration(seconds: 2),
+                                      () => getTimetable(myGroup, day));
                                 });
                               },
                             ),
