@@ -13,7 +13,9 @@ void main() {
 
 class MyApp extends StatelessWidget {
   final routes = <String, WidgetBuilder>{
+/*
     authorizationRoute: (BuildContext context) => Authorization(),
+*/
   };
   @override
   Widget build(BuildContext context) {
@@ -419,7 +421,7 @@ class _MyHomePageState extends State<MyHomePage> {
 Future<List> getTimetable(group, weekday) async {
   var lessonsArr = [];
   var url =
-      'http://api.timetable-ipf.com/api/timetable?group=$group&weekday=$weekday';
+      'https://api.timetable-ipf.com/api/timetable?group=$group&weekday=$weekday';
   var response = await http.get(url);
   var decoded = jsonDecode(response.body);
   for (int i = 0; i < decoded.length; i++) {
@@ -466,7 +468,7 @@ Future<String> createLesson(
   }
 
   if (switcher == 0) {
-    var url = 'http://api.timetable-ipf.com/api/timetable/create';
+    var url = 'https://api.timetable-ipf.com/api/timetable/create';
     var response = await http.post(url, body: {
       'group': createdLesson.group,
       'subgroup': createdLesson.subgroup,
@@ -507,7 +509,7 @@ class Lesson {
 Future<List<DropdownMenuItem<int>>> allGroups() async {
   groups = [''];
   List<DropdownMenuItem<int>> groupsOpt = [];
-  var url = 'http://api.timetable-ipf.com/api/timetable/options';
+  var url = 'https://api.timetable-ipf.com/api/timetable/options';
   var response = await http.get(url);
   var decoded = jsonDecode(response.body);
   var group = decoded['group'];
@@ -554,7 +556,7 @@ Future<Options> allOptions() async {
   var roomsOpt = [];
   var lessonsOpt = [];
 
-  var url = 'http://api.timetable-ipf.com/api/timetable/options';
+  var url = 'https://api.timetable-ipf.com/api/timetable/options';
   var response = await http.get(url);
   var decoded = jsonDecode(response.body);
   var group = decoded['group'];
@@ -611,7 +613,7 @@ class Options {
 }
 
 Future<int> deleteLesson(id) async {
-  var url = 'http://api.timetable-ipf.com/api/timetable/delete';
+  var url = 'https://api.timetable-ipf.com/api/timetable/delete';
   var response = await http.post(url, body: {'id': id});
   return response.statusCode;
 }
