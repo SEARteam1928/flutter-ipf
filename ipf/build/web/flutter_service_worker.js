@@ -3,36 +3,36 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 const RESOURCES = {
-  "index.html": "c98e7f1f272211f2a6c4f6be5aba65d9",
-"/": "c98e7f1f272211f2a6c4f6be5aba65d9",
-"main.dart.js": "23e98814eae7ea755cdd4dda8c1efac6",
+  "assets/AssetManifest.json": "96aa7eba2eb4a2a1e5aae1d1f46cae1e",
+"assets/FontManifest.json": "a8fe68574435c3f990b90af066321c41",
+"assets/fonts/MaterialIcons-Regular.otf": "a68d2a28c526b3b070aefca4bac93d25",
+"assets/fonts/Montserrat-Black.ttf": "3b396895e6988d35a5b46ee05b6d33ff",
+"assets/fonts/Montserrat-BlackItalic.ttf": "0672ca2e4a98d6e2286fd37f373a876f",
+"assets/fonts/Montserrat-Bold.ttf": "69c703b21776155b4bf13adbbb72e5a5",
+"assets/fonts/Montserrat-BoldItalic.ttf": "eb83f898880a44deeca283840a45f913",
+"assets/fonts/Montserrat-ExtraBold.ttf": "7a6fdef13a2abae467ee1b7a074b2a00",
+"assets/fonts/Montserrat-ExtraBoldItalic.ttf": "62973b22103f5eac74e39acfd265cae5",
+"assets/fonts/Montserrat-ExtraLight.ttf": "9ad37942bb6ac384b75ce1a65ecd78dc",
+"assets/fonts/Montserrat-ExtraLightItalic.ttf": "bf34ba2c374854bc88e0050a5d0d323e",
+"assets/fonts/Montserrat-Italic.ttf": "94843d8d9321098821fe6d64af3239c1",
+"assets/fonts/Montserrat-Light.ttf": "f8fe32d3f0e1dca05f9eece295173bd5",
+"assets/fonts/Montserrat-LightItalic.ttf": "bba75306e217801d52f8918a5808fb3d",
+"assets/fonts/Montserrat-Medium.ttf": "f7c2cad2a5287ca6894cc1eb0080d855",
+"assets/fonts/Montserrat-MediumItalic.ttf": "c8f07890599af48d986e8ecc160af375",
+"assets/fonts/Montserrat-Regular.ttf": "5906fb82e31864c9b531898bb3c97d98",
+"assets/fonts/Montserrat-SemiBold.ttf": "b80caec20382c61f0350f74ed67b7b0e",
+"assets/fonts/Montserrat-SemiBoldItalic.ttf": "fbcd1ab76ddb1973492726bb397af05a",
+"assets/fonts/Montserrat-Thin.ttf": "b60b82f5e87a84054c09bfa9ee39026f",
+"assets/fonts/Montserrat-ThinItalic.ttf": "efa2a39cf4b6d2098a1d3effca3eeb3d",
+"assets/NOTICES": "6972ec34fd8c99c299775801024f816a",
+"assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": "115e937bb829a890521f72d2e664b632",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796",
 "icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
-"manifest.json": "8c0522a81395cbd92ade40b76e5246d9",
-"assets/AssetManifest.json": "96aa7eba2eb4a2a1e5aae1d1f46cae1e",
-"assets/NOTICES": "1bd132d9d935288dc302a3be9e552a1d",
-"assets/FontManifest.json": "a8fe68574435c3f990b90af066321c41",
-"assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": "115e937bb829a890521f72d2e664b632",
-"assets/fonts/Montserrat-LightItalic.ttf": "bba75306e217801d52f8918a5808fb3d",
-"assets/fonts/Montserrat-Medium.ttf": "f7c2cad2a5287ca6894cc1eb0080d855",
-"assets/fonts/Montserrat-BoldItalic.ttf": "eb83f898880a44deeca283840a45f913",
-"assets/fonts/Montserrat-Light.ttf": "f8fe32d3f0e1dca05f9eece295173bd5",
-"assets/fonts/Montserrat-ThinItalic.ttf": "efa2a39cf4b6d2098a1d3effca3eeb3d",
-"assets/fonts/Montserrat-ExtraLight.ttf": "9ad37942bb6ac384b75ce1a65ecd78dc",
-"assets/fonts/Montserrat-Thin.ttf": "b60b82f5e87a84054c09bfa9ee39026f",
-"assets/fonts/Montserrat-Bold.ttf": "69c703b21776155b4bf13adbbb72e5a5",
-"assets/fonts/Montserrat-MediumItalic.ttf": "c8f07890599af48d986e8ecc160af375",
-"assets/fonts/Montserrat-BlackItalic.ttf": "0672ca2e4a98d6e2286fd37f373a876f",
-"assets/fonts/Montserrat-SemiBold.ttf": "b80caec20382c61f0350f74ed67b7b0e",
-"assets/fonts/Montserrat-ExtraLightItalic.ttf": "bf34ba2c374854bc88e0050a5d0d323e",
-"assets/fonts/Montserrat-ExtraBold.ttf": "7a6fdef13a2abae467ee1b7a074b2a00",
-"assets/fonts/Montserrat-Black.ttf": "3b396895e6988d35a5b46ee05b6d33ff",
-"assets/fonts/Montserrat-Regular.ttf": "5906fb82e31864c9b531898bb3c97d98",
-"assets/fonts/MaterialIcons-Regular.otf": "a68d2a28c526b3b070aefca4bac93d25",
-"assets/fonts/Montserrat-Italic.ttf": "94843d8d9321098821fe6d64af3239c1",
-"assets/fonts/Montserrat-SemiBoldItalic.ttf": "fbcd1ab76ddb1973492726bb397af05a",
-"assets/fonts/Montserrat-ExtraBoldItalic.ttf": "62973b22103f5eac74e39acfd265cae5"
+"index.html": "ff97fbd049f831fe706cc52348396e19",
+"/": "ff97fbd049f831fe706cc52348396e19",
+"main.dart.js": "010dc1044fdc0f0ac750fab44520f75b",
+"manifest.json": "cb478734b13b14e2b6dc39204cbea174"
 };
 
 // The application shell files that are downloaded before a service worker can
@@ -49,8 +49,8 @@ const CORE = [
 self.addEventListener("install", (event) => {
   return event.waitUntil(
     caches.open(TEMP).then((cache) => {
-      // Provide a 'reload' param to ensure the latest version is downloaded.
-      return cache.addAll(CORE.map((value) => new Request(value, {'cache': 'reload'})));
+      return cache.addAll(
+        CORE.map((value) => new Request(value + '?revision=' + RESOURCES[value], {'cache': 'reload'})));
     })
   );
 });

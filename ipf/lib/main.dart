@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:ipf/Admin.dart';
 import 'dart:async';
 import 'colors.dart';
 import 'package:http/http.dart' as http;
@@ -10,12 +11,14 @@ import 'dart:convert';
 void main() {
   runApp(MyApp());
 }
-
+var adminRoute = '/Admin';
 class MyApp extends StatelessWidget {
+  
   final routes = <String, WidgetBuilder>{
 /*
     authorizationRoute: (BuildContext context) => Authorization(),
 */
+    adminRoute: (BuildContext context) => Admin()
   };
   @override
   Widget build(BuildContext context) {
@@ -100,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: EdgeInsets.only(right: 20),
             child: GestureDetector(
               onTap: (){
-
+                Navigator.push(context, MaterialPageRoute(builder: (context) => Admin()));
               },
               child:Icon(Icons.assignment_ind,)
             ),
